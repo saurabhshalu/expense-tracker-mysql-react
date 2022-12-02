@@ -1,0 +1,25 @@
+{
+  "name": "expense-tracker-mysql-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "expenseServer.js",
+  "scripts": {
+    "preinstall": "cd frontend && npm install && npm run-script build",
+    "start": "node backend/expenseServer.js",
+    "server": "nodemon --watch backend backend/expenseServer.js",
+    "client": "npm start --prefix frontend"
+  },
+  "author": "Saurabh Verma",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.3.0",
+    "mysql": "^2.18.1",
+    "pg": "^8.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
