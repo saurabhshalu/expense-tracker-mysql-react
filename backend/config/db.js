@@ -7,6 +7,7 @@ const pool = mysql.createPool({
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  timezone: "utc",
 });
 
 const DB = (function () {
@@ -38,6 +39,7 @@ const DB = (function () {
   }
 
   const _query_promise = (query, params) => {
+    console.log(query, params);
     return new Promise((resolve, reject) => {
       pool.getConnection(function (err, connection) {
         if (err) {

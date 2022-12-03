@@ -14,9 +14,15 @@ router
         });
       }
       const mydate = date ? new Date(date) : new Date();
+      const mydateString = mydate.toISOString().split("T");
       const data = await DB.query_promise(
         "INSERT INTO tbl_transaction (date, category, description, amount) VALUES (?,?,?,?)",
-        [mydate, category, description, amount]
+        [
+          `${mydateString[0]} ${mydateString[1].replace("Z", "")}`,
+          category,
+          description,
+          amount,
+        ]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -61,10 +67,19 @@ router
           .json({ success: false, message: "Please send correct data." });
       }
 
-      const data = await DB.query_promise(
-        "UPDATE tbl_transaction SET amount=?, description=?, category=?, date=? WHERE id=?",
-        [amount, description, category, date, id]
-      );
+      let query = `UPDATE tbl_transaction SET amount=?, description=?, category=?`;
+      const values = [amount, description, category];
+
+      if (date) {
+        query += `, date=?`;
+        const mydate = date ? new Date(date) : new Date();
+        const mydateString = mydate.toISOString().split("T");
+        values.push(`${mydateString[0]} ${mydateString[1].replace("Z", "")}`);
+      }
+
+      query += ` WHERE id=?`;
+      values.push(id);
+      const data = await DB.query_promise(query, values);
       res.status(200).json({ success: true, data });
     } catch (error) {
       console.error(error);

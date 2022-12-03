@@ -3,6 +3,9 @@ export const formatDate = (value) => {
     return null;
   }
   const date = new Date(value);
+  console.log(date);
+  console.log(date.toISOString());
+  console.log(date.toUTCString());
   //return date.toDateString();
   return date.toLocaleString("default", {
     day: "numeric",

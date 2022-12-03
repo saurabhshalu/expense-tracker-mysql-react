@@ -4,35 +4,36 @@ const router = require("express").Router();
 
 router.get("/overview", async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { start, end, offset = -330 } = req.query;
     let sqlQuery = `SELECT category, sum(amount) as total FROM tbl_transaction`;
     const values = [];
 
-    if (start && end) {
-      sqlQuery += ` WHERE STR_TO_DATE(date,'%Y-%m-%d') >= ? AND STR_TO_DATE(date,'%Y-%m-%d') <= ?`;
-      values.push(start);
-      values.push(end);
-    }
+    const startDate = new Date(start);
+    startDate.setUTCHours(0, 0 + +offset, 0, 0);
+    const startString = startDate.toISOString().split("T");
+
+    const endDate = new Date(end);
+    endDate.setUTCHours(23, 59 + +offset, 59, 999);
+    const endString = endDate.toISOString().split("T");
+
+    sqlQuery += ` WHERE date >= ? AND date <= ?`;
+    values.push(`${startString[0]} ${startString[1].replace("Z", "")}`);
+    values.push(`${endString[0]} ${endString[1].replace("Z", "")}`);
 
     sqlQuery += ` GROUP BY category, SIGN(amount)`;
     const data = await DB.query_promise(sqlQuery, values);
 
-    let closingBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE STR_TO_DATE(date, '%Y-%m-%d') <= ?`;
-    const closingBalanceDate = new Date(start);
-    closingBalanceDate.setDate(closingBalanceDate.getDate() - 1);
+    let closingBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE date < ?`;
 
     const closingBalance = await DB.query_promise(closingBalanceQuery, [
-      closingBalanceDate.toISOString().split("T")[0],
+      `${startString[0]} ${startString[1].replace("Z", "")}`,
     ]);
 
-    let afterLastDateBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE STR_TO_DATE(date, '%Y-%m-%d') >= ?`;
-    const lastDate = new Date(end);
-
-    lastDate.setDate(lastDate.getDate() + 1);
+    let afterLastDateBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE date > ?`;
 
     const afterLastDateBalance = await DB.query_promise(
       afterLastDateBalanceQuery,
-      [lastDate.toISOString().split("T")[0]]
+      [`${endString[0]} ${endString[1].replace("Z", "")}`]
     );
 
     res.status(200).json({
@@ -52,7 +53,7 @@ router.get("/overview", async (req, res) => {
 });
 
 router.get("/details", async (req, res) => {
-  const { start, end, category, type } = req.query;
+  const { start, end, category, type, offset = -330 } = req.query;
 
   let sqlQuery = `SELECT * FROM tbl_transaction WHERE`;
   const values = [];
@@ -61,16 +62,20 @@ router.get("/details", async (req, res) => {
     values.push(category);
   }
   if (start) {
-    sqlQuery += `${
-      values.length > 0 ? " AND" : ""
-    } STR_TO_DATE(date,'%Y-%m-%d') >= ?`;
-    values.push(start);
+    const startDate = new Date(start);
+    startDate.setUTCHours(0, 0 + +offset, 0, 0);
+    const startString = startDate.toISOString().split("T");
+
+    sqlQuery += `${values.length > 0 ? " AND" : ""} date >= ?`;
+    values.push(`${startString[0]} ${startString[1].replace("Z", "")}`);
   }
   if (end) {
-    sqlQuery += `${
-      values.length > 0 ? " AND" : ""
-    } STR_TO_DATE(date,'%Y-%m-%d') <= ?`;
-    values.push(end);
+    const endDate = new Date(end);
+    endDate.setUTCHours(23, 59 + +offset, 59, 999);
+    const endString = endDate.toISOString().split("T");
+
+    sqlQuery += `${values.length > 0 ? " AND" : ""} date <= ?`;
+    values.push(`${endString[0]} ${endString[1].replace("Z", "")}`);
   }
   if (type) {
     if (type === "Expense") {
@@ -85,6 +90,7 @@ router.get("/details", async (req, res) => {
     sqlQuery += ` 1=1`;
   }
   sqlQuery += ` ORDER BY date DESC`;
+
   try {
     const data = await DB.query_promise(sqlQuery, values);
     res.status(200).json({ success: true, data });

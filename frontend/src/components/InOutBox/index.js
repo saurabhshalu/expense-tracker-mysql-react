@@ -1,5 +1,5 @@
-import { Button, Card, Grid, TextField } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Button, Card, Grid, LinearProgress, TextField } from "@mui/material";
+import React, { useState } from "react";
 import SearchableDropdown from "../SearchableDropdown";
 import axios from "axios";
 import { getDateWithCurrentTime, YYYYMMDD } from "../../helper";
@@ -27,9 +27,19 @@ const InOutBox = ({
         category: category.name,
         description,
         amount: mode === "in" ? Math.abs(amount) : 0 - Math.abs(amount),
-        date: getDateWithCurrentTime(date),
       };
       if (data.id) {
+        const d1 = new Date(date);
+        const d2 = new Date(data.date);
+        if (
+          !(
+            d1.getDate() === d2.getDate() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getFullYear() === d2.getFullYear()
+          )
+        ) {
+          body["date"] = getDateWithCurrentTime(date);
+        }
         await axios.put(
           `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
           {
@@ -45,6 +55,7 @@ const InOutBox = ({
         );
         refetch({ ...body, id: data.id }, "edit");
       } else {
+        body["date"] = getDateWithCurrentTime(date);
         const { data } = await axios.post(
           `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
           body,
@@ -147,9 +158,15 @@ const InOutBox = ({
             onChange={(e) => setDate(e.target.value)}
           />
         </Grid>
+        {(tLoading || dLoading) && (
+          <Grid item xs={12} md={6}>
+            <LinearProgress />
+          </Grid>
+        )}
         <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
           <Button
             disabled={
+              dLoading ||
               tLoading ||
               !amount ||
               !category ||
@@ -172,6 +189,7 @@ const InOutBox = ({
         <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
           <Button
             disabled={
+              dLoading ||
               tLoading ||
               !amount ||
               !category ||
@@ -194,7 +212,7 @@ const InOutBox = ({
           <>
             <Grid item xs={12} md={6}>
               <Button
-                disabled={dLoading}
+                disabled={dLoading || tLoading}
                 style={{ height: "100%" }}
                 onClick={deleteItem}
                 fullWidth
