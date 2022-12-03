@@ -83,6 +83,17 @@ const Navbar = () => {
                 <MenuItem
                   onClick={() => {
                     handleCloseUserMenu();
+                    navigate("/overview");
+                  }}
+                >
+                  Overview
+                </MenuItem>
+              )}
+
+              {authenticated && (
+                <MenuItem
+                  onClick={() => {
+                    handleCloseUserMenu();
                     navigate("/category");
                   }}
                 >
@@ -94,10 +105,10 @@ const Navbar = () => {
                 <MenuItem
                   onClick={() => {
                     handleCloseUserMenu();
-                    navigate("/overview");
+                    navigate("/settings");
                   }}
                 >
-                  Overview
+                  Settings
                 </MenuItem>
               )}
 

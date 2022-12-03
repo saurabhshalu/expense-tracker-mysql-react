@@ -2,16 +2,19 @@ import { Button, Card, Grid, LinearProgress, TextField } from "@mui/material";
 import React, { useState } from "react";
 import SearchableDropdown from "../SearchableDropdown";
 import axios from "axios";
-import { getDateWithCurrentTime, YYYYMMDD } from "../../helper";
+import {
+  getAuthTokenWithUID,
+  getDateWithCurrentTime,
+  YYYYMMDD,
+} from "../../helper";
 import toast from "react-hot-toast";
-import { getAuth } from "firebase/auth";
+
 const InOutBox = ({
   refetch = () => {},
   mode = "add",
   categoryList = [],
   data = {},
 }) => {
-  const auth = getAuth();
   const [category, setCategory] = useState(data.category || null);
   const [amount, setAmount] = useState(data.amount || "");
   const [description, setDescription] = useState(data.description || "");
@@ -28,6 +31,9 @@ const InOutBox = ({
         description,
         amount: mode === "in" ? Math.abs(amount) : 0 - Math.abs(amount),
       };
+
+      const authTokens = await getAuthTokenWithUID();
+
       if (data.id) {
         const d1 = new Date(date);
         const d2 = new Date(data.date);
@@ -48,21 +54,20 @@ const InOutBox = ({
           },
           {
             headers: {
-              authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-              uid: auth?.currentUser?.uid,
+              ...authTokens,
             },
           }
         );
         refetch({ ...body, id: data.id }, "edit");
       } else {
         body["date"] = getDateWithCurrentTime(date);
+
         const { data } = await axios.post(
           `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
           body,
           {
             headers: {
-              authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-              uid: auth?.currentUser?.uid,
+              ...authTokens,
             },
           }
         );
@@ -87,13 +92,13 @@ const InOutBox = ({
   const deleteItem = async () => {
     setDLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/expense`, {
         data: {
           id: data.id,
         },
         headers: {
-          authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-          uid: auth?.currentUser?.uid,
+          ...authTokens,
         },
       });
       toast.success("Deleted successfully");

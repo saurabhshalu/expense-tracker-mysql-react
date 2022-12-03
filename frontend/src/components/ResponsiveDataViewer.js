@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import CustomTableWithPage from "./CustomTableWithPage/CustomTableWithPage";
 import TransactionCard from "./TransactionCard";
+import { useSelector } from "react-redux";
 
 const mql = window.matchMedia("(max-width: 600px)");
 
@@ -25,6 +26,8 @@ const ResponsiveDataViewer = ({
   search = "",
   setSearch = () => {},
 }) => {
+  const settingState = useSelector((state) => state.auth.setting);
+
   const [height, setHeight] = useState(getHeight());
   const [mobileView, setMobileView] = useState(mql.matches);
 
@@ -67,10 +70,6 @@ const ResponsiveDataViewer = ({
   const Row = ({ index, style }) => (
     <TransactionCard
       style={style}
-      //   onClick={() => {
-      //     setSelectedItem(filteredData[index]);
-      //     setOpen(true);
-      //   }}
       onClick={
         handleItemClick
           ? (e) => {
@@ -80,6 +79,7 @@ const ResponsiveDataViewer = ({
       }
       key={filteredData[index].id}
       item={filteredData[index]}
+      balanceVisibility={settingState.balance}
     />
   );
 
@@ -170,7 +170,11 @@ const ResponsiveDataViewer = ({
         </>
       ) : (
         <CustomTableWithPage
-          columns={columns}
+          columns={
+            settingState.balance
+              ? columns
+              : columns.filter((i) => i.id !== "RunningTotal")
+          }
           rows={data}
           loading={loading}
           error={null}

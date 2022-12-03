@@ -4,9 +4,9 @@ import toast from "react-hot-toast";
 import InOutBox from "../../components/InOutBox";
 
 import CustomDialog from "../../components/CustomDialog";
-import { formatDate } from "../../helper";
+import { formatDate, getAuthTokenWithUID } from "../../helper";
 import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
-import { getAuth } from "firebase/auth";
+import { useSelector } from "react-redux";
 const columns = [
   {
     id: "date",
@@ -73,17 +73,16 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
-  const auth = getAuth();
-
   const getData = async () => {
     try {
       setLoading(true);
+
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
         {
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -140,12 +139,12 @@ const HomeScreen = () => {
   useEffect(() => {
     const getData = async () => {
       try {
+        const authTokens = await getAuthTokenWithUID();
         const { data } = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/api/category`,
           {
             headers: {
-              authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-              uid: auth?.currentUser?.uid,
+              ...authTokens,
             },
           }
         );

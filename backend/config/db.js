@@ -39,7 +39,6 @@ const DB = (function () {
   }
 
   const _query_promise = (query, params) => {
-    console.log(query, params);
     return new Promise((resolve, reject) => {
       pool.getConnection(function (err, connection) {
         if (err) {

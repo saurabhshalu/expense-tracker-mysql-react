@@ -4,17 +4,12 @@ import toast from "react-hot-toast";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CustomTableWithPage from "../../components/CustomTableWithPage/CustomTableWithPage";
 import { Button, Card, IconButton, TextField } from "@mui/material";
-import useProtect from "../../hooks/useProtect";
-import { getAuth } from "firebase/auth";
+import { getAuthTokenWithUID } from "../../helper";
 const columns = [
   { id: "name", label: "Category Name" },
   { id: "action", label: "Action" },
 ];
 const CategoryScreen = () => {
-  useProtect();
-
-  const auth = getAuth();
-
   const [loading, setLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [category, setCategory] = useState("");
@@ -23,12 +18,13 @@ const CategoryScreen = () => {
   const getData = async () => {
     setLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
+
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/category`,
         {
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -63,12 +59,12 @@ const CategoryScreen = () => {
 
   const deleteCategory = async (name) => {
     try {
+      const authTokens = await getAuthTokenWithUID();
       await axios.delete(
         `${process.env.REACT_APP_BACKEND_URL}/api/category/${name}`,
         {
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -84,6 +80,7 @@ const CategoryScreen = () => {
   const addCategory = async () => {
     setLoadingAdd(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/category`,
         {
@@ -91,8 +88,7 @@ const CategoryScreen = () => {
         },
         {
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );

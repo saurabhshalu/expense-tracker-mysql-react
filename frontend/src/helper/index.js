@@ -1,12 +1,11 @@
+import { getAuth } from "firebase/auth";
+
 export const formatDate = (value) => {
   if (!value) {
     return null;
   }
   const date = new Date(value);
-  console.log(date);
-  console.log(date.toISOString());
-  console.log(date.toUTCString());
-  //return date.toDateString();
+
   return date.toLocaleString("default", {
     day: "numeric",
     month: "short",
@@ -67,6 +66,12 @@ const getDaysInMonth = (m, y) => {
     : 30 + ((m + (m >> 3)) & 1);
 };
 
+export const getDate30daysBefore = (date) => {
+  const givenDate = new Date(date);
+  givenDate.setDate(givenDate.getDate() - 30);
+  return givenDate;
+};
+
 export const getFirstDateOfGivenMonth = (date) => {
   const givenDate = new Date(date);
   return new Date(givenDate.getFullYear(), givenDate.getMonth(), 1);
@@ -77,4 +82,20 @@ export const getLastDateOfGivenMonth = (date) => {
   const month = givenDate.getMonth();
   const year = givenDate.getFullYear();
   return new Date(year, month, getDaysInMonth(month, year));
+};
+
+export const getAuthTokenWithUID = async () => {
+  try {
+    const auth = getAuth();
+    const data = await auth.currentUser.getIdToken();
+    return {
+      authorization: `Bearer ${data}`,
+      uid: auth.currentUser?.uid,
+    };
+  } catch (error) {
+    return {
+      authorization: null,
+      uid: null,
+    };
+  }
 };

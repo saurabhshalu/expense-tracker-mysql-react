@@ -9,15 +9,15 @@ import { utils, writeFile } from "xlsx";
 import {
   formatDate,
   formatDateTime,
-  getFirstDateOfGivenMonth,
-  getLastDateOfGivenMonth,
+  getAuthTokenWithUID,
+  getDate30daysBefore,
   YYYYMMDD,
 } from "../../helper";
 import DoughnutChart from "./DoughnutChart";
 import LoadingCircularBar from "../../components/LoadingCircularBar";
 import BalanceCard from "../../components/BalanceCard";
 import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
-import { getAuth } from "firebase/auth";
+import { useSelector } from "react-redux";
 
 const columns = [
   {
@@ -59,30 +59,29 @@ const columns = [
 ];
 
 const Overview = () => {
-  const auth = getAuth();
+  const settingState = useSelector((state) => state.auth.setting);
+
   const [loading, setLoading] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [overview, setOverview] = useState({});
   const [detailList, setDetailList] = useState([]);
   const [startDate, setStartDate] = useState(
-    YYYYMMDD(getFirstDateOfGivenMonth(new Date()))
+    YYYYMMDD(getDate30daysBefore(new Date()))
   );
-  const [endDate, setEndDate] = useState(
-    YYYYMMDD(getLastDateOfGivenMonth(new Date()))
-  );
+  const [endDate, setEndDate] = useState(YYYYMMDD(new Date()));
   const [category, setCategory] = useState(null);
   const [type, setType] = useState(null);
 
   const getCategory = async () => {
     setLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/category`,
         {
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -104,16 +103,17 @@ const Overview = () => {
   const fetchOverviewData = async () => {
     setLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/report/overview`,
         {
           params: {
             start: startDate,
             end: endDate,
+            offset: new Date().getTimezoneOffset(),
           },
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -134,14 +134,10 @@ const Overview = () => {
   const [search, setSearch] = useState("");
 
   const expenseCategoryClickHandler = (category) => {
-    // setCategory({ name: category });
-    // setType({ name: "Expense" });
     getReport(category, "Expense");
     endPage.current.scrollIntoView({ behaviour: "smooth" });
   };
   const incomeCategoryClickHandler = (category) => {
-    // setCategory({ name: category });
-    // setType({ name: "Income" });
     getReport(category, "Income");
     endPage.current.scrollIntoView({ behaviour: "smooth" });
   };
@@ -165,13 +161,14 @@ const Overview = () => {
       if (endDate) {
         params.end = endDate;
       }
+
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/report/details`,
         {
-          params,
+          params: { ...params, offset: new Date().getTimezoneOffset() },
           headers: {
-            authorization: `Bearer ${auth?.currentUser?.accessToken}`,
-            uid: auth?.currentUser?.uid,
+            ...authTokens,
           },
         }
       );
@@ -358,7 +355,8 @@ const Overview = () => {
               marginTop: 10,
             }}
           >
-            {overview.closingBalance &&
+            {settingState.openingBalance &&
+              overview.closingBalance &&
               overview.closingBalance.length > 0 &&
               overview.closingBalance[0].total && (
                 <Grid item xs={12} md={3.5}>
@@ -370,7 +368,8 @@ const Overview = () => {
                   />
                 </Grid>
               )}
-            {overview.afterLastDateBalance &&
+            {settingState.closingBalance &&
+              overview.afterLastDateBalance &&
               overview.afterLastDateBalance.length > 0 &&
               overview.afterLastDateBalance[0].total && (
                 <Grid item xs={12} md={3.5}>
@@ -386,7 +385,7 @@ const Overview = () => {
                   />
                 </Grid>
               )}
-            {overview.closingBalance && (
+            {settingState.availableBalance && overview.closingBalance && (
               <Grid item xs={12} md={3.5}>
                 <BalanceCard
                   title="Available Balance"
@@ -429,30 +428,32 @@ const Overview = () => {
             />
           )}
         </div>
-        <div
-          style={{
-            width: 360,
-            position: "relative",
-            border: "1px dashed gray",
-            alignItems: "stretch",
-          }}
-        >
-          {loading ? (
-            <LoadingCircularBar />
-          ) : (
-            <DoughnutChart
-              label="Amount"
-              clickHandler={incomeCategoryClickHandler}
-              labels={income.map((i) => i.category)}
-              data={income.map((i) => i.total)}
-              center={{
-                text: "Money Received",
-                amount: income.reduce((a, b) => a + Math.abs(b.total), 0),
-              }}
-              unique_id_for_legend="amount_received_legend"
-            />
-          )}
-        </div>
+        {settingState.moneyReceivedChart && (
+          <div
+            style={{
+              width: 360,
+              position: "relative",
+              border: "1px dashed gray",
+              alignItems: "stretch",
+            }}
+          >
+            {loading ? (
+              <LoadingCircularBar />
+            ) : (
+              <DoughnutChart
+                label="Amount"
+                clickHandler={incomeCategoryClickHandler}
+                labels={income.map((i) => i.category)}
+                data={income.map((i) => i.total)}
+                center={{
+                  text: "Money Received",
+                  amount: income.reduce((a, b) => a + Math.abs(b.total), 0),
+                }}
+                unique_id_for_legend="amount_received_legend"
+              />
+            )}
+          </div>
+        )}
 
         <div ref={endPage}></div>
         <div

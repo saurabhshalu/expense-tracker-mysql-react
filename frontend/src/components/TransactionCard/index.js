@@ -2,7 +2,12 @@ import React from "react";
 import { formatDate } from "../../helper";
 import styles from "./TransactionCard.module.css";
 
-const TransactionCard = ({ item, style, onClick }) => {
+const TransactionCard = ({
+  item,
+  style,
+  onClick,
+  balanceVisibility = false,
+}) => {
   return (
     <div
       onClick={onClick ? onClick : () => {}}
@@ -63,7 +68,7 @@ const TransactionCard = ({ item, style, onClick }) => {
               })}
             </div>
           </div>
-          {item.RunningTotal && (
+          {balanceVisibility && item.RunningTotal && (
             <div
               style={{
                 display: "flex",

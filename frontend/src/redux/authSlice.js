@@ -6,6 +6,15 @@ const initialState = {
   loading: false,
   error: null,
   authenticated: false,
+  setting: localStorage.getItem("setting")
+    ? JSON.parse(localStorage.getItem("setting"))
+    : {
+        balance: true,
+        openingBalance: true,
+        closingBalance: true,
+        availableBalance: true,
+        moneyReceivedChart: true,
+      },
 };
 
 export const login = createAsyncThunk("loginUser", async (_, thunkAPI) => {
@@ -45,7 +54,11 @@ export const logout = createAsyncThunk("logoutUser", async (_, thunkAPI) => {
 const authSlice = createSlice({
   name: "authSlice",
   initialState,
-  reducers: {},
+  reducers: {
+    assignSetting: (state, action) => {
+      state.setting[action.payload.name] = action.payload.value;
+    },
+  },
   extraReducers: {
     [login.pending]: (state) => {
       state.error = null;
@@ -73,3 +86,4 @@ const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
+export const { assignSetting } = authSlice.actions;

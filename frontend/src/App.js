@@ -12,6 +12,7 @@ import Overlay from "./components/Overlay/Overlay";
 import Error404 from "./components/Error404/Error404";
 import CategoryScreen from "./screens/CategoryScreen";
 import Overview from "./screens/ReportScreen/Overview";
+import SettingScreen from "./screens/SettingScreen";
 
 const App = () => {
   const auth = getAuth();
@@ -61,6 +62,14 @@ const App = () => {
                 path="/overview"
                 element={user.admin ? <Overview /> : <Navigate to="/login" />}
               />
+
+              <Route
+                path="/settings"
+                element={
+                  user.admin ? <SettingScreen /> : <Navigate to="/login" />
+                }
+              />
+
               <Route path="*" element={<Error404 />} />
             </Routes>
           </Suspense>
