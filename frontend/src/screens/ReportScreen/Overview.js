@@ -116,7 +116,7 @@ const Overview = () => {
     try {
       const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/report/overview`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/transactions/groupByCategory`,
         {
           params: {
             start: startDate,
@@ -128,7 +128,10 @@ const Overview = () => {
           },
         }
       );
-      setOverview(data.data);
+      setOverview({
+        items: data.data,
+      });
+      // setOverview(data.data);
     } catch (error) {
       toast.error(
         error.response.data.message || error.message || "Failed to get data."
@@ -288,7 +291,7 @@ const Overview = () => {
               key={item.id}
               style={{
                 // minWidth: "300px",
-                width: "100%",
+                // width: "100%",
                 // maxWidth: "400px",
                 // minWidth: 200,
                 background: "white",

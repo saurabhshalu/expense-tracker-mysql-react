@@ -123,6 +123,8 @@ const HomeScreen = () => {
       setData((old) => [
         {
           ...payload,
+          wallet_name: walletBalanceList.find((i) => i.id === payload.wallet_id)
+            .name,
         },
         ...old,
       ]);
