@@ -7,6 +7,7 @@ import CustomDialog from "../../components/CustomDialog";
 import { formatDate, getAuthTokenWithUID } from "../../helper";
 import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
 import { useSelector } from "react-redux";
+import useHTTP from "../../hooks/useHTTP";
 const columns = [
   {
     id: "date",
@@ -79,7 +80,7 @@ const HomeScreen = () => {
 
       const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/transactions`,
         {
           headers: {
             ...authTokens,
@@ -98,9 +99,22 @@ const HomeScreen = () => {
     }
   };
 
+  const { data: walletBalance, call: callWalletBalance } = useHTTP({
+    url: `${process.env.REACT_APP_BACKEND_URL}/api/wallets/balance`,
+    method: "GET",
+    initialValue: [],
+  });
+
+  const [walletBalanceList, setWalletBalanceList] = useState(walletBalance);
+
+  useEffect(() => {
+    setWalletBalanceList(walletBalance);
+  }, [walletBalance]);
+
   useEffect(() => {
     getData();
-  }, []);
+    callWalletBalance();
+  }, [callWalletBalance]);
 
   const ref = useRef();
   const itemsRef = useRef();
@@ -109,19 +123,25 @@ const HomeScreen = () => {
       setData((old) => [
         {
           ...payload,
-          RunningTotal:
-            old.length > 0
-              ? old[0].RunningTotal + payload.amount
-              : payload.amount,
         },
         ...old,
       ]);
+      setWalletBalanceList((old) =>
+        old.map((i) => {
+          if (i.id === payload.wallet_id) {
+            return { ...i, balance: i.balance + payload.amount };
+          }
+          return i;
+        })
+      );
     } else if (mode === "edit") {
       getData();
+      callWalletBalance();
       setOpen(false);
       setSelectedItem({});
     } else if (mode === "delete") {
       getData();
+      callWalletBalance();
       setOpen(false);
       setSelectedItem({});
     }
@@ -182,10 +202,15 @@ const HomeScreen = () => {
             },
           }}
           categoryList={categoryList}
+          walletBalanceList={walletBalanceList}
         />
       </CustomDialog>
       <div style={{ width: "100%" }} ref={ref}>
-        <InOutBox refetch={refetchData} categoryList={categoryList} />
+        <InOutBox
+          refetch={refetchData}
+          categoryList={categoryList}
+          walletBalanceList={walletBalanceList}
+        />
       </div>
       <ResponsiveDataViewer
         search={search}

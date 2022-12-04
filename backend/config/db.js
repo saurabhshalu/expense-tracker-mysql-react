@@ -29,12 +29,12 @@ const DB = (function () {
         }
       });
 
-      connection.on("error", function (err) {
-        console.error("ERROR: releasing connection.");
-        connection.release();
-        callback(null, err);
-        throw err;
-      });
+      // connection.on("error", function (err) {
+      //   console.error("ERROR: releasing connection.");
+      //   connection.release();
+      //   callback(null, err);
+      //   throw err;
+      // });
     });
   }
 
@@ -56,11 +56,11 @@ const DB = (function () {
           }
         });
 
-        connection.on("error", function (err) {
-          console.error("ERROR: releasing connection.", err);
-          connection.release();
-          reject(err);
-        });
+        // connection.on("error", function (err) {
+        //   console.error("ERROR: releasing connection.", err);
+        //   connection.release();
+        //   reject(err);
+        // });
       });
     });
   };

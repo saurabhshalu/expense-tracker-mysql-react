@@ -18,6 +18,7 @@ import LoadingCircularBar from "../../components/LoadingCircularBar";
 import BalanceCard from "../../components/BalanceCard";
 import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
 import { useSelector } from "react-redux";
+import useHTTP from "../../hooks/useHTTP";
 
 const columns = [
   {
@@ -60,6 +61,16 @@ const columns = [
 
 const Overview = () => {
   const settingState = useSelector((state) => state.auth.setting);
+
+  const { data: walletBalanceList, call: callWalletBalance } = useHTTP({
+    url: `${process.env.REACT_APP_BACKEND_URL}/api/wallets/balance`,
+    method: "GET",
+    initialValue: [],
+  });
+
+  useEffect(() => {
+    callWalletBalance();
+  }, [callWalletBalance]);
 
   const [loading, setLoading] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -208,6 +219,116 @@ const Overview = () => {
           justifyContent: "center",
         }}
       >
+        {/* <div
+          style={{
+            width: "100%",
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {walletBalanceList.map((item) => (
+            <div
+              key={item.id}
+              style={{
+                minWidth: "300px",
+                width: "100%",
+                maxWidth: "400px",
+                background: "white",
+                borderRadius: 5,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                gap: 10,
+                border: "1px dashed gray",
+                padding: "10px 5px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: "lighter",
+                  color: item.balance >= 0 ? "green" : "red",
+                }}
+              >
+                {item.balance.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </div>
+              <div
+                style={{
+                  color: "gray",
+                  textTransform: "uppercase",
+                  fontSize: 15,
+                }}
+              >
+                {item.name}
+              </div>
+            </div>
+          ))}
+        </div> */}
+
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            gap: 10,
+            paddingBottom: 10,
+            // flexWrap: "wrap",
+            // justifyContent: "center",
+            overflowX: "auto",
+          }}
+        >
+          {walletBalanceList.map((item) => (
+            <div
+              key={item.id}
+              style={{
+                // minWidth: "300px",
+                width: "100%",
+                // maxWidth: "400px",
+                // minWidth: 200,
+                background: "white",
+                borderRadius: 5,
+                display: "inline-flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                gap: 10,
+                border: "1px dashed gray",
+                padding: "10px 25px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: "lighter",
+                  color: item.balance >= 0 ? "green" : "red",
+                }}
+              >
+                {item.balance.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </div>
+              <div
+                style={{
+                  color: "gray",
+                  textTransform: "uppercase",
+                  fontSize: 15,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {item.name}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div
           style={{
             position: "relative",

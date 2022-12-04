@@ -1,5 +1,5 @@
 import { Button, Card, Grid, LinearProgress, TextField } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SearchableDropdown from "../SearchableDropdown";
 import axios from "axios";
 import {
@@ -14,8 +14,22 @@ const InOutBox = ({
   mode = "add",
   categoryList = [],
   data = {},
+  walletBalanceList = [],
 }) => {
   const [category, setCategory] = useState(data.category || null);
+  const [wallet, setWallet] = useState(null);
+
+  useEffect(() => {
+    setWallet(
+      mode === "add"
+        ? walletBalanceList.length > 0
+          ? walletBalanceList[0]
+          : null
+        : walletBalanceList.find((i) => i.id === data.wallet_id) || null
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletBalanceList]);
+
   const [amount, setAmount] = useState(data.amount || "");
   const [description, setDescription] = useState(data.description || "");
   const [date, setDate] = useState(
@@ -30,6 +44,7 @@ const InOutBox = ({
         category: category.name,
         description,
         amount: mode === "in" ? Math.abs(amount) : 0 - Math.abs(amount),
+        wallet_id: wallet.id,
       };
 
       const authTokens = await getAuthTokenWithUID();
@@ -47,10 +62,9 @@ const InOutBox = ({
           body["date"] = getDateWithCurrentTime(date);
         }
         await axios.put(
-          `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
+          `${process.env.REACT_APP_BACKEND_URL}/api/transactions/${data.id}`,
           {
             ...body,
-            id: data.id,
           },
           {
             headers: {
@@ -63,7 +77,7 @@ const InOutBox = ({
         body["date"] = getDateWithCurrentTime(date);
 
         const { data } = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
+          `${process.env.REACT_APP_BACKEND_URL}/api/transactions`,
           body,
           {
             headers: {
@@ -93,14 +107,14 @@ const InOutBox = ({
     setDLoading(true);
     try {
       const authTokens = await getAuthTokenWithUID();
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/expense`, {
-        data: {
-          id: data.id,
-        },
-        headers: {
-          ...authTokens,
-        },
-      });
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/api/transactions/${data.id}`,
+        {
+          headers: {
+            ...authTokens,
+          },
+        }
+      );
       toast.success("Deleted successfully");
       refetch({ ...data }, "delete");
     } catch (error) {
@@ -138,6 +152,12 @@ const InOutBox = ({
             fullWidth
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            InputProps={{
+              inputProps: {
+                min: 10,
+                max: 100,
+              },
+            }}
           />
         </Grid>
         <Grid item xs={12} md={mode === "edit" ? 6 : 3}>
@@ -163,6 +183,51 @@ const InOutBox = ({
             onChange={(e) => setDate(e.target.value)}
           />
         </Grid>
+        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+          <SearchableDropdown
+            required={true}
+            value={wallet}
+            onChange={(e) => {
+              setWallet(e.target.value);
+            }}
+            items={walletBalanceList}
+            label="Select Wallet"
+            name="wallet"
+          />
+          {wallet && (
+            <div
+              style={{
+                fontSize: 12,
+                paddingTop: 2,
+              }}
+            >
+              Balance :
+              <span style={{ color: wallet.balance >= 0 ? "green" : "red" }}>
+                {(wallet.id === data?.wallet_id && data.amount > 0
+                  ? wallet.balance - data.amount
+                  : wallet?.balance || 0
+                ).toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </span>{" "}
+              {data?.amount && wallet.id === data?.wallet_id && (
+                <>
+                  +{" "}
+                  <span style={{ color: data.amount >= 0 ? "green" : "red" }}>
+                    {(data?.amount || 0).toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </Grid>
+
         {(tLoading || dLoading) && (
           <Grid item xs={12} md={6}>
             <LinearProgress />
@@ -178,7 +243,8 @@ const InOutBox = ({
               (category &&
                 category.name.toLowerCase().startsWith("other") &&
                 !description) ||
-              amount < 0
+              amount < 0 ||
+              !wallet
             }
             fullWidth
             style={{ height: "100%" }}
@@ -200,7 +266,13 @@ const InOutBox = ({
               !category ||
               (category &&
                 category.name.toLowerCase().startsWith("other") &&
-                !description)
+                !description) ||
+              !wallet ||
+              (wallet.type === "debit" &&
+                (wallet.balance <= 0 ||
+                  Math.abs(amount) >
+                    (wallet.balance || 0) -
+                      (wallet.id === data?.wallet_id ? data?.amount : 0)))
             }
             style={{ height: "100%" }}
             onClick={() => {
