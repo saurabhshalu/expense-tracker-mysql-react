@@ -13,6 +13,7 @@ import Error404 from "./components/Error404/Error404";
 import CategoryScreen from "./screens/CategoryScreen";
 import Overview from "./screens/ReportScreen/Overview";
 import SettingScreen from "./screens/SettingScreen";
+import ExpenseIncomeByCategory from "./screens/ReportScreen/ExpenseIncomeByCategory";
 
 const App = () => {
   const auth = getAuth();
@@ -61,6 +62,14 @@ const App = () => {
               <Route
                 path="/overview"
                 element={user.admin ? <Overview /> : <Navigate to="/login" />}
+              />
+
+              <Route
+                path="/overview/category"
+                // element={
+                //   user.admin ? <ExpenseByCategory /> : <Navigate to="/login" />
+                // }
+                element={<ExpenseIncomeByCategory />}
               />
 
               <Route

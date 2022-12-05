@@ -28,18 +28,12 @@ const DB = (function () {
           callback(null, err);
         }
       });
-
-      // connection.on("error", function (err) {
-      //   console.error("ERROR: releasing connection.");
-      //   connection.release();
-      //   callback(null, err);
-      //   throw err;
-      // });
     });
   }
 
   const _query_promise = (query, params) => {
     return new Promise((resolve, reject) => {
+      console.log(query, params);
       pool.getConnection(function (err, connection) {
         if (err) {
           console.error("ERROR: releasing connection.", err);
@@ -55,12 +49,6 @@ const DB = (function () {
             reject(err);
           }
         });
-
-        // connection.on("error", function (err) {
-        //   console.error("ERROR: releasing connection.", err);
-        //   connection.release();
-        //   reject(err);
-        // });
       });
     });
   };

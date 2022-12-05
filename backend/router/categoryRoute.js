@@ -7,7 +7,7 @@ router
   .get(async (req, res) => {
     try {
       const data = await DB.query_promise(
-        "SELECT * FROM tbl_category ORDER BY name"
+        "SELECT name as id, name FROM tbl_category ORDER BY name"
       );
       res.status(200).json({ success: true, data });
     } catch (error) {

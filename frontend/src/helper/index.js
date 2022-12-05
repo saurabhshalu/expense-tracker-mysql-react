@@ -99,3 +99,22 @@ export const getAuthTokenWithUID = async () => {
     };
   }
 };
+
+export const groupByDate = (length = 7, data = []) => {
+  const dates = [...Array(length)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return YYYYMMDD(d);
+  });
+  dates.sort();
+
+  const values = {};
+  data.forEach((item) => {
+    const date = YYYYMMDD(item.date);
+    values[date] = (values[date] || 0) + item.amount;
+  });
+
+  return dates.map((date) => {
+    return { date: date, amount: Math.abs(values[date] || 0) };
+  });
+};

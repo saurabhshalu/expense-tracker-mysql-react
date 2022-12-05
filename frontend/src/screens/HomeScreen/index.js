@@ -6,8 +6,9 @@ import InOutBox from "../../components/InOutBox";
 import CustomDialog from "../../components/CustomDialog";
 import { formatDate, getAuthTokenWithUID } from "../../helper";
 import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
-import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import useHTTP from "../../hooks/useHTTP";
+import { getCategoryList, getWalletList } from "../../redux/globalSlice";
 const columns = [
   {
     id: "date",
@@ -71,9 +72,14 @@ const columns = [
 ];
 
 const HomeScreen = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
+  useEffect(() => {
+    dispatch(getWalletList());
+    dispatch(getCategoryList());
+  }, [dispatch]);
   const getData = async () => {
     try {
       setLoading(true);

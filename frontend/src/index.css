@@ -186,3 +186,12 @@ body {
 .legendClass > li {
   cursor: pointer;
 }
+
+.doughnutContainer {
+  width: 360px;
+  position: relative;
+  border: 1px dashed gray;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 360px;
+}
