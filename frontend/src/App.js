@@ -14,6 +14,7 @@ import CategoryScreen from "./screens/CategoryScreen";
 import Overview from "./screens/ReportScreen/Overview";
 import SettingScreen from "./screens/SettingScreen";
 import ExpenseIncomeByCategory from "./screens/ReportScreen/ExpenseIncomeByCategory";
+import CreditDebitScreen from "./screens/ReportScreen/CreditDebitScreen";
 
 const App = () => {
   const auth = getAuth();
@@ -67,9 +68,17 @@ const App = () => {
               <Route
                 path="/overview/category"
                 // element={
-                //   user.admin ? <ExpenseByCategory /> : <Navigate to="/login" />
+                //   user.admin ? <ExpenseIncomeByCategory /> : <Navigate to="/login" />
                 // }
                 element={<ExpenseIncomeByCategory />}
+              />
+
+              <Route
+                path="/overview/creditdebit"
+                // element={
+                //   user.admin ? <CreditDebitScreen /> : <Navigate to="/login" />
+                // }
+                element={<CreditDebitScreen />}
               />
 
               <Route

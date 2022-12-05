@@ -100,24 +100,6 @@ const Overview = () => {
     last7DayCall,
   ]);
 
-  const expenseCategoryClickHandler = (category) => {
-    // getReport(category, "Expense");
-    // endPage.current.scrollIntoView({ behaviour: "smooth" });
-    navigate("./category", {
-      state: {
-        start,
-        end,
-        data: expenseByCategoryData,
-        period: { id: 30, name: "Last 30 Days" },
-        type: { id: "debit", name: "Expense" },
-      },
-    });
-  };
-  const incomeCategoryClickHandler = (category) => {
-    // getReport(category, "Income");
-    // endPage.current.scrollIntoView({ behaviour: "smooth" });
-  };
-
   return (
     <>
       <div
@@ -197,7 +179,17 @@ const Overview = () => {
           ) : (
             <DoughnutChart
               label="Amount"
-              clickHandler={expenseCategoryClickHandler}
+              clickHandler={() => {
+                navigate("./category", {
+                  state: {
+                    start,
+                    end,
+                    data: expenseByCategoryData,
+                    period: { id: 30, name: "Last 30 Days" },
+                    type: { id: "debit", name: "Expense" },
+                  },
+                });
+              }}
               labels={expenseByCategoryData.map((i) => i.category)}
               data={expenseByCategoryData.map((i) => i.total)}
               center={{
@@ -220,7 +212,17 @@ const Overview = () => {
           ) : (
             <DoughnutChart
               label="Amount"
-              clickHandler={expenseCategoryClickHandler}
+              clickHandler={() => {
+                navigate("./creditdebit", {
+                  state: {
+                    start,
+                    end,
+                    data: incomevsexpDataChart,
+                    period: { id: 30, name: "Last 30 Days" },
+                    type: { id: "debit", name: "Expense" },
+                  },
+                });
+              }}
               labels={incomevsexpDataChart.map((i) => i.category)}
               data={incomevsexpDataChart.map((i) => i.total)}
               center={{

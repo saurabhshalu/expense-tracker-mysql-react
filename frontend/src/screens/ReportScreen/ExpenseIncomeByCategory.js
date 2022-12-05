@@ -60,7 +60,7 @@ const ExpenseIncomeByCategory = () => {
   const endRef = useRef(location.state?.end || YYYYMMDD(new Date()));
   const typeRef = useRef(location.state?.type || null);
 
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(location.state?.data || []);
   const [loading, setLoading] = useState(false);
   const getExpenseCategory = async () => {
     setLoading(true);
@@ -133,11 +133,17 @@ const ExpenseIncomeByCategory = () => {
   //   );
 
   useEffect(() => {
-    if (location.state) {
+    if (location.state && location.state.data) {
       getTransactionData();
     }
+    if (location.state && !location.state.data) {
+      getExpenseCategory();
+      getTransactionData();
+    }
+    //  else {
+    //   getExpenseCategory();
+    // }
 
-    getExpenseCategory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -197,7 +203,7 @@ const ExpenseIncomeByCategory = () => {
             headerText={
               typeRef.current && typeRef.current.id === "debit"
                 ? "Expenses By Category"
-                : "Income by Categories"
+                : "Income by Category"
             }
           />
         )}
