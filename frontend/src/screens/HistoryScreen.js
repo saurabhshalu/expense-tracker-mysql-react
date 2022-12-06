@@ -1,11 +1,13 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import CustomAccordion from "../components/CustomAccordion";
 import FilterBox from "../components/FilterBox";
 import ResponsiveDataViewer from "../components/ResponsiveDataViewer";
 import { formatDate, getDate30daysBefore, YYYYMMDD } from "../helper";
+import { openModal } from "../redux/globalSlice";
 
 const columns = [
   {
@@ -49,6 +51,11 @@ const columns = [
 
 const HistoryScreen = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
+
+  const { force_refetch, data: dataToAdd } = useSelector(
+    (state) => state.global.form
+  );
 
   const walletRef = useRef(
     location.state?.wallet || { id: 0, name: "All Wallets" }
@@ -110,6 +117,12 @@ const HistoryScreen = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (force_refetch) {
+      fetchData();
+    }
+  }, [force_refetch]);
+
   return (
     <div>
       <CustomAccordion
@@ -151,6 +164,11 @@ const HistoryScreen = () => {
           }}
           search={search}
           setSearch={setSearch}
+          handleItemClick={(row) => {
+            dispatch(
+              openModal({ open: true, edit_mode: true, selected_item: row })
+            );
+          }}
         />
       </div>
     </div>

@@ -6,51 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DoughnutChart from "../../components/DoughnutChart";
 import FilterBox from "../../components/FilterBox";
 import LoadingCircularBar from "../../components/LoadingCircularBar";
-// import ResponsiveDataViewer from "../../components/ResponsiveDataViewer";
-import {
-  //formatDate,
-  YYYYMMDD,
-} from "../../helper";
-
-// const columns = [
-//   {
-//     id: "date",
-//     label: "Date",
-//     format: (value) => formatDate(value),
-//   },
-//   {
-//     id: "category",
-//     label: "Category",
-//   },
-//   {
-//     id: "amount",
-//     label: "Amount",
-//     format: (value) => {
-//       return value > 0 ? (
-//         <span className="green">
-//           {(value || 0).toLocaleString("en-IN", {
-//             maximumFractionDigits: 2,
-//             style: "currency",
-//             currency: "INR",
-//           })}
-//         </span>
-//       ) : (
-//         <span className="red">
-//           {(value || 0).toLocaleString("en-IN", {
-//             maximumFractionDigits: 2,
-//             style: "currency",
-//             currency: "INR",
-//           })}
-//         </span>
-//       );
-//     },
-//   },
-//   {
-//     id: "description",
-//     label: "Description",
-//   },
-//   { id: "wallet_name", label: "Wallet Name" },
-// ];
+import { YYYYMMDD } from "../../helper";
 
 const ExpenseIncomeByCategory = () => {
   const navigate = useNavigate();
@@ -97,52 +53,14 @@ const ExpenseIncomeByCategory = () => {
     }
   };
 
-  // const [transactions, setTransactions] = useState([]);
-  // const [transactionsLoading, setTransactionsLoading] = useState(false);
-  // const getTransactionData = async () => {
-  //   setTransactionsLoading(true);
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_BACKEND_URL}/api/query/advance`,
-  //       {
-  //         params: {
-  //           start: startRef.current,
-  //           end: endRef.current,
-  //           wallet_id: walletRef.current?.id,
-  //           type: typeRef.current?.id,
-  //           offset: new Date().getTimezoneOffset(),
-  //         },
-  //       }
-  //     );
-  //     if (data.success) {
-  //       setTransactions(data.data);
-  //     } else {
-  //       toast.error(data.message || "Not found.");
-  //     }
-  //   } catch (error) {
-  //     toast.error(
-  //       error?.response?.data?.message ||
-  //         error.message ||
-  //         "Something went wrong."
-  //     );
-  //   } finally {
-  //     setTransactionsLoading(false);
-  //   }
-  // };
-
   useEffect(() => {
-    // if (location.state && location.state.data) {
-    //   getTransactionData();
-    // }
     if (location.state && !location.state.data) {
       getExpenseCategory();
-      // getTransactionData();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const [search, setSearch] = useState("");
   return (
     <div
       style={{
@@ -172,7 +90,6 @@ const ExpenseIncomeByCategory = () => {
             periodRef.current = payload.period;
             typeRef.current = payload.type;
             getExpenseCategory();
-            //getTransactionData();
           }}
         />
       </Card>
@@ -213,19 +130,6 @@ const ExpenseIncomeByCategory = () => {
           />
         )}
       </div>
-      {/* <div style={{ flex: 1, minWidth: 300 }}>
-        <ResponsiveDataViewer
-          loading={transactionsLoading}
-          columns={columns}
-          data={transactions}
-          refreshData={() => {}}
-          getHeight={() => {
-            return window.innerHeight - 200;
-          }}
-          search={search}
-          setSearch={setSearch}
-        />
-      </div> */}
     </div>
   );
 };

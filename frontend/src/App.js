@@ -17,9 +17,11 @@ import ExpenseIncomeByCategory from "./screens/ReportScreen/ExpenseIncomeByCateg
 import CreditDebitScreen from "./screens/ReportScreen/CreditDebitScreen";
 import HistoryScreen from "./screens/HistoryScreen";
 
+import { closeModal } from "./redux/globalSlice";
+import InOutBox from "./components/InOutBox";
+
 const App = () => {
   const auth = getAuth();
-
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
 
@@ -36,9 +38,10 @@ const App = () => {
     return <LinearProgress />;
   }
   return (
-    <div className="mainBodyContainer">
+    <div>
       <BrowserRouter>
         <Navbar />
+
         <Container
           sx={{
             paddingLeft: "auto",
@@ -101,6 +104,7 @@ const App = () => {
             </Routes>
           </Suspense>
         </Container>
+
         <Toaster
           position="bottom-center"
           toastOptions={{ style: { background: "#333", color: "#FFF" } }}

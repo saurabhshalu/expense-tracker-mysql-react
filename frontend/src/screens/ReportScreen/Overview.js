@@ -1,4 +1,4 @@
-import { LinearProgress } from "@mui/material";
+import { CircularProgress, LinearProgress } from "@mui/material";
 
 import React, { useEffect } from "react";
 
@@ -8,6 +8,8 @@ import LoadingCircularBar from "../../components/LoadingCircularBar";
 import useHTTP from "../../hooks/useHTTP";
 import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getCategoryList, getWalletList } from "../../redux/globalSlice";
 
 const startWith30Period = new Date();
 startWith30Period.setDate(startWith30Period.getDate() - 30);
@@ -19,6 +21,13 @@ const last7Date = YYYYMMDD(last7);
 
 const Overview = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getWalletList());
+    dispatch(getCategoryList());
+  }, [dispatch]);
+
   const {
     data: walletBalanceList,
     loading: walletLoading,
@@ -116,8 +125,6 @@ const Overview = () => {
             display: "flex",
             gap: 10,
             paddingBottom: 10,
-            // flexWrap: "wrap",
-            // justifyContent: "center",
             overflowX: "auto",
           }}
         >
@@ -262,27 +269,31 @@ const Overview = () => {
               Last 7 days
             </div>
           </div>
-          <div style={{ width: "100%" }}>
-            <Bar
-              data={{
-                labels: last7DayChartData.map((i, index) =>
-                  index === last7DayChartData.length - 1
-                    ? "Today"
-                    : i.date.split("-")[2]
-                ),
-                datasets: [
-                  {
-                    label: "Expense",
-                    data: last7DayChartData.map((i) => i.amount),
-                    backgroundColor: "#F05365",
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: true,
-              }}
-            />
+          <div style={{ width: "100%", textAlign: "center" }}>
+            {last7Loading ? (
+              <CircularProgress />
+            ) : (
+              <Bar
+                data={{
+                  labels: last7DayChartData.map((i, index) =>
+                    index === last7DayChartData.length - 1
+                      ? "Today"
+                      : i.date.split("-")[2]
+                  ),
+                  datasets: [
+                    {
+                      label: "Expense",
+                      data: last7DayChartData.map((i) => i.amount),
+                      backgroundColor: "#F05365",
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: true,
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -203,12 +203,7 @@ const HomeScreen = () => {
         <InOutBox
           refetch={refetchData}
           mode="edit"
-          data={{
-            ...selectedItem,
-            category: {
-              name: selectedItem.category,
-            },
-          }}
+          data={selectedItem}
           categoryList={categoryList}
           walletBalanceList={walletBalanceList}
         />

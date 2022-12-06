@@ -9,6 +9,13 @@ const initialState = {
   category_list: [],
   category_error: null,
   category_loading: false,
+  form: {
+    edit_mode: false,
+    open: false,
+    selected_item: {},
+    force_refetch: false,
+    added_data: null,
+  },
 };
 
 export const getWalletList = createAsyncThunk(
@@ -91,9 +98,18 @@ const globalSlice = createSlice({
   name: "globalSlice",
   initialState,
   reducers: {
-    // assignSetting: (state, action) => {
-    //   state.setting[action.payload.name] = action.payload.value;
-    // },
+    openModal: (state, action) => {
+      state.form = action.payload;
+      state.form.force_refetch = false;
+      state.form.added_data = null;
+    },
+    closeModal: (state, action) => {
+      state.form.edit_mode = false;
+      state.form.selected_item = {};
+      state.form.open = false;
+      state.form.force_refetch = action.payload.force_refetch || false;
+      state.form.added_data = action.payload.data || null;
+    },
   },
   extraReducers: {
     [getWalletList.pending]: (state) => {
@@ -125,3 +141,5 @@ const globalSlice = createSlice({
 });
 
 export default globalSlice.reducer;
+
+export const { openModal, closeModal } = globalSlice.actions;

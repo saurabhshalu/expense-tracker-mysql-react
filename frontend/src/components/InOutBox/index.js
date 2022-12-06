@@ -8,20 +8,26 @@ import {
   YYYYMMDD,
 } from "../../helper";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { closeModal } from "../../redux/globalSlice";
 
 const InOutBox = ({
   refetch = () => {},
-  mode = "add",
+  //mode = "add",
+  edit_mode = false,
   categoryList = [],
   data = {},
   walletBalanceList = [],
 }) => {
-  const [category, setCategory] = useState(data.category || null);
+  const dispatch = useDispatch();
+  const [category, setCategory] = useState(
+    data.category ? { id: data.category, name: data.category } : null
+  );
   const [wallet, setWallet] = useState(null);
 
   useEffect(() => {
     setWallet(
-      mode === "add"
+      !edit_mode
         ? walletBalanceList.length > 0
           ? walletBalanceList[0]
           : null
@@ -72,7 +78,8 @@ const InOutBox = ({
             },
           }
         );
-        refetch({ ...body, id: data.id }, "edit");
+        // refetch({ ...body, id: data.id }, "edit");
+        dispatch(closeModal({ force_refetch: true, data: null }));
       } else {
         body["date"] = getDateWithCurrentTime(date);
 
@@ -85,7 +92,14 @@ const InOutBox = ({
             },
           }
         );
-        refetch({ ...body, id: data.data.insertId });
+        // refetch({ ...body, id: data.data.insertId });
+
+        dispatch(
+          closeModal({
+            force_refetch: false,
+            data: { ...body, id: data.data.insertedId },
+          })
+        );
       }
       setAmount("");
       setDescription("");
@@ -116,14 +130,13 @@ const InOutBox = ({
         }
       );
       toast.success("Deleted successfully");
-      refetch({ ...data }, "delete");
+      dispatch(closeModal({ force_refetch: true, data: null }));
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
           "Something went wrong."
       );
-    } finally {
       setDLoading(false);
     }
   };
@@ -131,7 +144,7 @@ const InOutBox = ({
   return (
     <Card elevation={5} style={{ width: "100%", padding: 20 }}>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <SearchableDropdown
             required={true}
             value={category}
@@ -143,7 +156,7 @@ const InOutBox = ({
             name="category"
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <TextField
             required
             size="small"
@@ -160,10 +173,10 @@ const InOutBox = ({
             }}
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 3}>
+        <Grid item xs={12} md={6}>
           <TextField
             required={
-              category && category.name.toLowerCase().startsWith("other")
+              category && category?.name?.toLowerCase().startsWith("other")
             }
             size="small"
             label="Description"
@@ -172,7 +185,7 @@ const InOutBox = ({
             onChange={(e) => setDescription(e.target.value)}
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <TextField
             required
             size="small"
@@ -183,7 +196,7 @@ const InOutBox = ({
             onChange={(e) => setDate(e.target.value)}
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <SearchableDropdown
             required={true}
             value={wallet}
@@ -233,7 +246,7 @@ const InOutBox = ({
             <LinearProgress />
           </Grid>
         )}
-        <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
+        <Grid item xs={6} md={3}>
           <Button
             disabled={
               dLoading ||
@@ -241,7 +254,7 @@ const InOutBox = ({
               !amount ||
               !category ||
               (category &&
-                category.name.toLowerCase().startsWith("other") &&
+                category?.name?.toLowerCase().startsWith("other") &&
                 !description) ||
               amount < 0 ||
               !wallet
@@ -257,7 +270,7 @@ const InOutBox = ({
             CASH IN (+)
           </Button>
         </Grid>
-        <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
+        <Grid item xs={6} md={3}>
           <Button
             disabled={
               dLoading ||
@@ -265,7 +278,7 @@ const InOutBox = ({
               !amount ||
               !category ||
               (category &&
-                category.name.toLowerCase().startsWith("other") &&
+                category?.name?.toLowerCase().startsWith("other") &&
                 !description) ||
               !wallet ||
               (wallet.type === "debit" &&
@@ -285,7 +298,7 @@ const InOutBox = ({
             CASH OUT (-)
           </Button>
         </Grid>
-        {mode === "edit" && (
+        {edit_mode && (
           <>
             <Grid item xs={12} md={6}>
               <Button
