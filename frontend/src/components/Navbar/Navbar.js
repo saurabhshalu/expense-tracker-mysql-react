@@ -94,6 +94,17 @@ const Navbar = () => {
                 <MenuItem
                   onClick={() => {
                     handleCloseUserMenu();
+                    navigate("/history");
+                  }}
+                >
+                  Transactions
+                </MenuItem>
+              )}
+
+              {authenticated && (
+                <MenuItem
+                  onClick={() => {
+                    handleCloseUserMenu();
                     navigate("/category");
                   }}
                 >

@@ -15,6 +15,7 @@ import Overview from "./screens/ReportScreen/Overview";
 import SettingScreen from "./screens/SettingScreen";
 import ExpenseIncomeByCategory from "./screens/ReportScreen/ExpenseIncomeByCategory";
 import CreditDebitScreen from "./screens/ReportScreen/CreditDebitScreen";
+import HistoryScreen from "./screens/HistoryScreen";
 
 const App = () => {
   const auth = getAuth();
@@ -79,6 +80,14 @@ const App = () => {
                 //   user.admin ? <CreditDebitScreen /> : <Navigate to="/login" />
                 // }
                 element={<CreditDebitScreen />}
+              />
+
+              <Route
+                path="/history"
+                // element={
+                //   user.admin ? <HistoryScreen /> : <Navigate to="/login" />
+                // }
+                element={<HistoryScreen />}
               />
 
               <Route

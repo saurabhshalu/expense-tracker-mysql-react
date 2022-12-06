@@ -127,7 +127,7 @@ const FilterBox = ({
       {showType && (
         <Grid item xs={12} md={2}>
           <SearchableDropdown
-            disableClearable={typeClearable}
+            disableClearable={!typeClearable}
             value={type}
             onChange={(e) => {
               setType(e.target.value);
