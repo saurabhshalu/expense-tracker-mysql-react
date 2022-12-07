@@ -15,6 +15,7 @@ const initialState = {
     selected_item: {},
     force_refetch: false,
     added_data: null,
+    data_type: null,
   },
 };
 
@@ -102,13 +103,16 @@ const globalSlice = createSlice({
       state.form = action.payload;
       state.form.force_refetch = false;
       state.form.added_data = null;
+      state.form.data_type = null;
     },
     closeModal: (state, action) => {
+      console.log(action.payload);
       state.form.edit_mode = false;
       state.form.selected_item = {};
       state.form.open = false;
       state.form.force_refetch = action.payload.force_refetch || false;
       state.form.added_data = action.payload.data || null;
+      state.form.data_type = action.payload.data_type || null;
     },
   },
   extraReducers: {

@@ -7,7 +7,7 @@ import CustomAccordion from "../components/CustomAccordion";
 import FilterBox from "../components/FilterBox";
 import ResponsiveDataViewer from "../components/ResponsiveDataViewer";
 import { formatDate, getDate30daysBefore, YYYYMMDD } from "../helper";
-import { openModal } from "../redux/globalSlice";
+import { closeModal, getWalletList, openModal } from "../redux/globalSlice";
 
 const columns = [
   {
@@ -53,7 +53,7 @@ const HistoryScreen = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { force_refetch, data: dataToAdd } = useSelector(
+  const { force_refetch, added_data, data_type } = useSelector(
     (state) => state.global.form
   );
 
@@ -74,7 +74,12 @@ const HistoryScreen = () => {
 
   const typeRef = useRef(location.state?.type || null);
 
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(
+    (categoryRef.current && categoryRef.current.id) ||
+      (typeRef.current && typeRef.current.id)
+      ? true
+      : false
+  );
   const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -118,16 +123,43 @@ const HistoryScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (force_refetch) {
-      fetchData();
+    // console.log(force_refetch, dataToAdd);
+    // if (force_refetch && !dataToAdd) {
+    //   fetchData();
+    // }
+    if (force_refetch && added_data && data_type) {
+      if (data_type === "add") {
+        setTransactions((old) => [added_data, ...old]);
+        dispatch(getWalletList());
+      } else if (data_type === "update") {
+        const myData = [...transactions];
+        const index = myData.findIndex((i) => i.id === added_data.id);
+        if (index >= 0) {
+          myData[index] = added_data;
+          setTransactions(myData);
+          dispatch(getWalletList());
+        }
+      } else if (data_type === "delete") {
+        setTransactions((old) => old.filter((i) => i.id !== added_data.id));
+        dispatch(getWalletList());
+      }
+      dispatch(closeModal({ force_refetch: false, added_data: null }));
     }
-  }, [force_refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [force_refetch, added_data, dispatch, data_type]);
 
   return (
     <div>
       <CustomAccordion
         expanded={expanded}
-        title={<div style={{ fontWeight: "bold" }}>Advance Filter</div>}
+        title={
+          <div style={{ fontWeight: "bold" }}>
+            {(categoryRef.current && categoryRef.current.id) ||
+            (typeRef.current && typeRef.current.id)
+              ? "Advance Filter"
+              : "Search Filter"}
+          </div>
+        }
         handleChange={() => {
           setExpanded((old) => !old);
         }}

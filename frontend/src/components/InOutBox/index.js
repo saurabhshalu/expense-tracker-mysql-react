@@ -19,6 +19,7 @@ const InOutBox = ({
   data = {},
   walletBalanceList = [],
 }) => {
+  console.log(data);
   const dispatch = useDispatch();
   const [category, setCategory] = useState(
     data.category ? { id: data.category, name: data.category } : null
@@ -79,7 +80,20 @@ const InOutBox = ({
           }
         );
         // refetch({ ...body, id: data.id }, "edit");
-        dispatch(closeModal({ force_refetch: true, data: null }));
+        dispatch(
+          closeModal({
+            force_refetch: true,
+            data: {
+              ...data,
+              ...body,
+              wallet_name: walletBalanceList.find(
+                (i) => i.id === body.wallet_id
+              ).name,
+              id: data.id,
+            },
+            data_type: "update",
+          })
+        );
       } else {
         body["date"] = getDateWithCurrentTime(date);
 
@@ -96,8 +110,13 @@ const InOutBox = ({
 
         dispatch(
           closeModal({
-            force_refetch: false,
-            data: { ...body, id: data.data.insertedId },
+            force_refetch: true,
+            data: {
+              ...body,
+              date: YYYYMMDD(body.date),
+              id: data.data.insertedId,
+            },
+            data_type: "add",
           })
         );
       }
@@ -130,7 +149,13 @@ const InOutBox = ({
         }
       );
       toast.success("Deleted successfully");
-      dispatch(closeModal({ force_refetch: true, data: null }));
+      dispatch(
+        closeModal({
+          force_refetch: true,
+          data: { id: data.id },
+          data_type: "delete",
+        })
+      );
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||

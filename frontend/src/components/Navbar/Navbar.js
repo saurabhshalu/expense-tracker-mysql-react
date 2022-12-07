@@ -83,7 +83,9 @@ const Navbar = () => {
             <CustomDialog
               open={open}
               title={edit_mode ? "Edit Transaction" : "Add Transaction"}
-              handleClose={() => dispatch(closeModal())}
+              handleClose={() =>
+                dispatch(closeModal({ force_refetch: false, added_data: null }))
+              }
             >
               <InOutBox
                 refetch={() => {}}
