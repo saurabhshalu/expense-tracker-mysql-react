@@ -11,9 +11,11 @@ const SearchableDropdown = ({
   value,
   fullWidth = true,
   required = false,
+  disableClearable = false,
 }) => {
   return (
     <Autocomplete
+      disableClearable={disableClearable}
       size="small"
       fullWidth={fullWidth}
       freeSolo={freeSolo}
@@ -34,7 +36,7 @@ const SearchableDropdown = ({
       renderInput={(params) => (
         <TextField {...params} required={required} label={label} />
       )}
-      isOptionEqualToValue={(option, value) => option.name === value.name}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
     />
   );
 };

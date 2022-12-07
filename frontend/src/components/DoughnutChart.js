@@ -25,6 +25,8 @@ const DoughnutChart = ({
     text: "Amount Spent",
     amount: 8888888,
   },
+  headerText = "",
+  subHeaderText = "",
   clickHandler = (category) => {},
 }) => {
   const chartRef = useRef();
@@ -89,8 +91,39 @@ const DoughnutChart = ({
     };
   }, [clickHandler]);
   return (
-    <div style={{ width: "100%", position: "relative" }}>
-      <div style={{ position: "relative", margin: 30 }}>
+    <div style={{ width: "100%" }}>
+      {(headerText || subHeaderText) && (
+        <div style={{ marginTop: 10 }}>
+          {headerText && (
+            <div
+              style={{ fontWeight: "bold", textAlign: "center", fontSize: 20 }}
+            >
+              {headerText}
+            </div>
+          )}
+          {subHeaderText && (
+            <div
+              style={{
+                fontWeight: "lighter",
+                textAlign: "center",
+                fontSize: 16,
+                fontFamily: "monospace",
+              }}
+            >
+              {subHeaderText}
+            </div>
+          )}
+        </div>
+      )}
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          padding: 10,
+          gap: 10,
+        }}
+      >
         <Doughnut
           ref={chartRef}
           onClick={onClick}

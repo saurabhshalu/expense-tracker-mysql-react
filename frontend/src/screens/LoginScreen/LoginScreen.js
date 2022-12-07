@@ -6,7 +6,12 @@ import { toast } from "react-hot-toast";
 import { provider } from "../../helper/Firebase";
 import { login, logout } from "../../redux/authSlice";
 import { useDispatch } from "react-redux";
-import { getAuth, signInWithPopup } from "firebase/auth";
+import {
+  browserSessionPersistence,
+  getAuth,
+  setPersistence,
+  signInWithPopup,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
@@ -47,6 +52,7 @@ const LoginScreen = () => {
   const loginHandler = async () => {
     try {
       setLoading(true);
+      await setPersistence(auth, browserSessionPersistence);
       await signInWithPopup(auth, provider);
       dispatch(login());
     } catch (error) {

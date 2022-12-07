@@ -1,5 +1,5 @@
 import { Button, Card, Grid, LinearProgress, TextField } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SearchableDropdown from "../SearchableDropdown";
 import axios from "axios";
 import {
@@ -8,14 +8,32 @@ import {
   YYYYMMDD,
 } from "../../helper";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { closeModal } from "../../redux/globalSlice";
 
 const InOutBox = ({
-  refetch = () => {},
-  mode = "add",
+  edit_mode = false,
   categoryList = [],
   data = {},
+  walletBalanceList = [],
 }) => {
-  const [category, setCategory] = useState(data.category || null);
+  const dispatch = useDispatch();
+  const [category, setCategory] = useState(
+    data.category ? { id: data.category, name: data.category } : null
+  );
+  const [wallet, setWallet] = useState(null);
+
+  useEffect(() => {
+    setWallet(
+      !edit_mode
+        ? walletBalanceList.length > 0
+          ? walletBalanceList[0]
+          : null
+        : walletBalanceList.find((i) => i.id === data.wallet_id) || null
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletBalanceList]);
+
   const [amount, setAmount] = useState(data.amount || "");
   const [description, setDescription] = useState(data.description || "");
   const [date, setDate] = useState(
@@ -30,6 +48,7 @@ const InOutBox = ({
         category: category.name,
         description,
         amount: mode === "in" ? Math.abs(amount) : 0 - Math.abs(amount),
+        wallet_id: wallet.id,
       };
 
       const authTokens = await getAuthTokenWithUID();
@@ -47,10 +66,9 @@ const InOutBox = ({
           body["date"] = getDateWithCurrentTime(date);
         }
         await axios.put(
-          `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
+          `${process.env.REACT_APP_BACKEND_URL}/api/transactions/${data.id}`,
           {
             ...body,
-            id: data.id,
           },
           {
             headers: {
@@ -58,12 +76,26 @@ const InOutBox = ({
             },
           }
         );
-        refetch({ ...body, id: data.id }, "edit");
+
+        dispatch(
+          closeModal({
+            force_refetch: true,
+            data: {
+              ...data,
+              ...body,
+              wallet_name: walletBalanceList.find(
+                (i) => i.id === body.wallet_id
+              ).name,
+              id: data.id,
+            },
+            data_type: "update",
+          })
+        );
       } else {
         body["date"] = getDateWithCurrentTime(date);
 
         const { data } = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/expense`,
+          `${process.env.REACT_APP_BACKEND_URL}/api/transactions`,
           body,
           {
             headers: {
@@ -71,7 +103,21 @@ const InOutBox = ({
             },
           }
         );
-        refetch({ ...body, id: data.data.insertId });
+
+        dispatch(
+          closeModal({
+            force_refetch: true,
+            data: {
+              ...body,
+              wallet_name: walletBalanceList.find(
+                (i) => i.id === body.wallet_id
+              ).name,
+              date: YYYYMMDD(body.date),
+              id: data.data.insertId,
+            },
+            data_type: "add",
+          })
+        );
       }
       setAmount("");
       setDescription("");
@@ -93,23 +139,28 @@ const InOutBox = ({
     setDLoading(true);
     try {
       const authTokens = await getAuthTokenWithUID();
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/expense`, {
-        data: {
-          id: data.id,
-        },
-        headers: {
-          ...authTokens,
-        },
-      });
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/api/transactions/${data.id}`,
+        {
+          headers: {
+            ...authTokens,
+          },
+        }
+      );
       toast.success("Deleted successfully");
-      refetch({ ...data }, "delete");
+      dispatch(
+        closeModal({
+          force_refetch: true,
+          data: { id: data.id },
+          data_type: "delete",
+        })
+      );
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
           "Something went wrong."
       );
-    } finally {
       setDLoading(false);
     }
   };
@@ -117,7 +168,7 @@ const InOutBox = ({
   return (
     <Card elevation={5} style={{ width: "100%", padding: 20 }}>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <SearchableDropdown
             required={true}
             value={category}
@@ -129,7 +180,7 @@ const InOutBox = ({
             name="category"
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <TextField
             required
             size="small"
@@ -138,12 +189,18 @@ const InOutBox = ({
             fullWidth
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            InputProps={{
+              inputProps: {
+                min: 10,
+                max: 100,
+              },
+            }}
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 3}>
+        <Grid item xs={12} md={6}>
           <TextField
             required={
-              category && category.name.toLowerCase().startsWith("other")
+              category && category?.name?.toLowerCase().startsWith("other")
             }
             size="small"
             label="Description"
@@ -152,7 +209,7 @@ const InOutBox = ({
             onChange={(e) => setDescription(e.target.value)}
           />
         </Grid>
-        <Grid item xs={12} md={mode === "edit" ? 6 : 2}>
+        <Grid item xs={12} md={6}>
           <TextField
             required
             size="small"
@@ -163,12 +220,76 @@ const InOutBox = ({
             onChange={(e) => setDate(e.target.value)}
           />
         </Grid>
+        <Grid item xs={12} md={6}>
+          <SearchableDropdown
+            required={true}
+            value={wallet}
+            onChange={(e) => {
+              setWallet(e.target.value);
+            }}
+            items={walletBalanceList}
+            label="Select Wallet"
+            name="wallet"
+          />
+          {wallet && (
+            <div
+              style={{
+                fontSize: 12,
+                paddingTop: 2,
+              }}
+            >
+              Balance :{" "}
+              <span style={{ color: wallet.balance >= 0 ? "green" : "red" }}>
+                {wallet.balance?.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </span>
+              {edit_mode && (
+                <>
+                  {" + "}
+                  <span style={{ color: data?.amount < 0 ? "green" : "red" }}>
+                    {(0 - data?.amount)?.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </>
+              )}
+              {/* <span style={{ color: wallet.balance >= 0 ? "green" : "red" }}>
+                {(wallet.id === data?.wallet_id && data.amount > 0
+                  ? wallet.balance - data.amount
+                  : wallet?.balance || 0
+                ).toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </span>{" "}
+              {data?.amount && wallet.id === data?.wallet_id && (
+                <>
+                  +{" "}
+                  <span style={{ color: data.amount >= 0 ? "green" : "red" }}>
+                    {(data?.amount || 0).toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </>
+              )} */}
+            </div>
+          )}
+        </Grid>
+
         {(tLoading || dLoading) && (
           <Grid item xs={12} md={6}>
             <LinearProgress />
           </Grid>
         )}
-        <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
+        <Grid item xs={6} md={3}>
           <Button
             disabled={
               dLoading ||
@@ -176,9 +297,10 @@ const InOutBox = ({
               !amount ||
               !category ||
               (category &&
-                category.name.toLowerCase().startsWith("other") &&
+                category?.name?.toLowerCase().startsWith("other") &&
                 !description) ||
-              amount < 0
+              amount < 0 ||
+              !wallet
             }
             fullWidth
             style={{ height: "100%" }}
@@ -191,7 +313,7 @@ const InOutBox = ({
             CASH IN (+)
           </Button>
         </Grid>
-        <Grid item xs={6} md={mode === "edit" ? 3 : 1.5}>
+        <Grid item xs={6} md={3}>
           <Button
             disabled={
               dLoading ||
@@ -199,8 +321,14 @@ const InOutBox = ({
               !amount ||
               !category ||
               (category &&
-                category.name.toLowerCase().startsWith("other") &&
-                !description)
+                category?.name?.toLowerCase().startsWith("other") &&
+                !description) ||
+              !wallet ||
+              (wallet.type === "debit" &&
+                (wallet.balance <= 0 ||
+                  Math.abs(amount) >
+                    (wallet.balance || 0) -
+                      (wallet.id === data?.wallet_id ? data?.amount : 0)))
             }
             style={{ height: "100%" }}
             onClick={() => {
@@ -213,7 +341,7 @@ const InOutBox = ({
             CASH OUT (-)
           </Button>
         </Grid>
-        {mode === "edit" && (
+        {edit_mode && (
           <>
             <Grid item xs={12} md={6}>
               <Button

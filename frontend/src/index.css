@@ -186,3 +186,27 @@ body {
 .legendClass > li {
   cursor: pointer;
 }
+
+.doughnutContainer {
+  width: 360px;
+  position: relative;
+  border: 1px dashed gray;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.addTransaction {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 20;
+}
+
+@media screen and (min-width: 480px) {
+  .addTransaction {
+    position: relative;
+    bottom: unset;
+    right: unset;
+  }
+}

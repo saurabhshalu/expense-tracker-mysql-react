@@ -2,12 +2,7 @@ import React from "react";
 import { formatDate } from "../../helper";
 import styles from "./TransactionCard.module.css";
 
-const TransactionCard = ({
-  item,
-  style,
-  onClick,
-  balanceVisibility = false,
-}) => {
+const TransactionCard = ({ item, style, onClick }) => {
   return (
     <div
       onClick={onClick ? onClick : () => {}}
@@ -53,8 +48,19 @@ const TransactionCard = ({
             <hr className="hrStyle hrStyleDesktop" />
           </>
         )}
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", gap: 5 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 5,
+            }}
+          >
             <div
               style={{
                 fontWeight: "bold",
@@ -68,25 +74,8 @@ const TransactionCard = ({
               })}
             </div>
           </div>
-          {balanceVisibility && item.RunningTotal && (
-            <div
-              style={{
-                display: "flex",
-                gap: 5,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ color: "gray" }}>Balance: </div>
-              <div style={{ fontWeight: "bold" }}>
-                {item.RunningTotal.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                  style: "currency",
-                  currency: "INR",
-                })}
-              </div>
-            </div>
-          )}
+
+          <div style={{ color: "gray", fontSize: 12 }}>{item.wallet_name}</div>
         </div>
       </div>
     </div>

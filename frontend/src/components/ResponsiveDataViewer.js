@@ -150,7 +150,7 @@ const ResponsiveDataViewer = ({
           <div>
             {loading ? (
               <LinearProgress />
-            ) : (
+            ) : filteredData.length > 0 ? (
               <List
                 ref={itemsRef}
                 height={height}
@@ -165,6 +165,8 @@ const ResponsiveDataViewer = ({
               >
                 {Row}
               </List>
+            ) : (
+              <div style={{ color: "red" }}>No Data Found</div>
             )}
           </div>
         </>
