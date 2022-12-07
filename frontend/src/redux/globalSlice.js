@@ -106,7 +106,6 @@ const globalSlice = createSlice({
       state.form.data_type = null;
     },
     closeModal: (state, action) => {
-      console.log(action.payload);
       state.form.edit_mode = false;
       state.form.selected_item = {};
       state.form.open = false;

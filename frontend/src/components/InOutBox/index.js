@@ -12,14 +12,11 @@ import { useDispatch } from "react-redux";
 import { closeModal } from "../../redux/globalSlice";
 
 const InOutBox = ({
-  refetch = () => {},
-  //mode = "add",
   edit_mode = false,
   categoryList = [],
   data = {},
   walletBalanceList = [],
 }) => {
-  console.log(data);
   const dispatch = useDispatch();
   const [category, setCategory] = useState(
     data.category ? { id: data.category, name: data.category } : null
@@ -79,7 +76,7 @@ const InOutBox = ({
             },
           }
         );
-        // refetch({ ...body, id: data.id }, "edit");
+
         dispatch(
           closeModal({
             force_refetch: true,
@@ -106,15 +103,17 @@ const InOutBox = ({
             },
           }
         );
-        // refetch({ ...body, id: data.data.insertId });
 
         dispatch(
           closeModal({
             force_refetch: true,
             data: {
               ...body,
+              wallet_name: walletBalanceList.find(
+                (i) => i.id === body.wallet_id
+              ).name,
               date: YYYYMMDD(body.date),
-              id: data.data.insertedId,
+              id: data.data.insertId,
             },
             data_type: "add",
           })
@@ -239,8 +238,27 @@ const InOutBox = ({
                 paddingTop: 2,
               }}
             >
-              Balance :
+              Balance :{" "}
               <span style={{ color: wallet.balance >= 0 ? "green" : "red" }}>
+                {wallet.balance?.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                  style: "currency",
+                  currency: "INR",
+                })}
+              </span>
+              {edit_mode && (
+                <>
+                  {" + "}
+                  <span style={{ color: data?.amount < 0 ? "green" : "red" }}>
+                    {(0 - data?.amount)?.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </span>
+                </>
+              )}
+              {/* <span style={{ color: wallet.balance >= 0 ? "green" : "red" }}>
                 {(wallet.id === data?.wallet_id && data.amount > 0
                   ? wallet.balance - data.amount
                   : wallet?.balance || 0
@@ -261,7 +279,7 @@ const InOutBox = ({
                     })}
                   </span>
                 </>
-              )}
+              )} */}
             </div>
           )}
         </Grid>

@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DoughnutChart from "../../components/DoughnutChart";
 import FilterBox from "../../components/FilterBox";
 import LoadingCircularBar from "../../components/LoadingCircularBar";
-import { YYYYMMDD } from "../../helper";
+import { getAuthTokenWithUID, YYYYMMDD } from "../../helper";
 
 const CreditDebitScreen = () => {
   const location = useLocation();
@@ -34,6 +34,7 @@ const CreditDebitScreen = () => {
   const getIncomeVsExpense = async () => {
     setLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/query/incomevsexpense`,
         {
@@ -42,6 +43,9 @@ const CreditDebitScreen = () => {
             end: endRef.current,
             wallet_id: walletRef.current?.id,
             offset: new Date().getTimezoneOffset(),
+          },
+          headers: {
+            ...authTokens,
           },
         }
       );

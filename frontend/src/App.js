@@ -2,7 +2,6 @@ import React, { Suspense, useEffect, useState } from "react";
 import { Container, LinearProgress } from "@mui/material";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
-import HomeScreen from "./screens/HomeScreen";
 import { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import LoginScreen from "./screens/LoginScreen/LoginScreen";
@@ -16,9 +15,7 @@ import SettingScreen from "./screens/SettingScreen";
 import ExpenseIncomeByCategory from "./screens/ReportScreen/ExpenseIncomeByCategory";
 import CreditDebitScreen from "./screens/ReportScreen/CreditDebitScreen";
 import HistoryScreen from "./screens/HistoryScreen";
-
-import { closeModal } from "./redux/globalSlice";
-import InOutBox from "./components/InOutBox";
+import WalletScreen from "./screens/WalletScreen";
 
 const App = () => {
   const auth = getAuth();
@@ -52,12 +49,13 @@ const App = () => {
         >
           <Suspense fallback={<Overlay open={true} />}>
             <Routes>
+              <Route path="/login" element={<LoginScreen />} />
+
               <Route
                 path="/"
-                element={user.admin ? <HomeScreen /> : <Navigate to="/login" />}
+                element={user.admin ? <Overview /> : <Navigate to="/login" />}
               />
 
-              <Route path="/login" element={<LoginScreen />} />
               <Route
                 path="/category"
                 element={
@@ -65,32 +63,40 @@ const App = () => {
                 }
               />
               <Route
+                path="/wallet"
+                element={
+                  user.admin ? <WalletScreen /> : <Navigate to="/login" />
+                }
+              />
+
+              <Route
                 path="/overview"
                 element={user.admin ? <Overview /> : <Navigate to="/login" />}
               />
 
               <Route
                 path="/overview/category"
-                // element={
-                //   user.admin ? <ExpenseIncomeByCategory /> : <Navigate to="/login" />
-                // }
-                element={<ExpenseIncomeByCategory />}
+                element={
+                  user.admin ? (
+                    <ExpenseIncomeByCategory />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
               />
 
               <Route
                 path="/overview/creditdebit"
-                // element={
-                //   user.admin ? <CreditDebitScreen /> : <Navigate to="/login" />
-                // }
-                element={<CreditDebitScreen />}
+                element={
+                  user.admin ? <CreditDebitScreen /> : <Navigate to="/login" />
+                }
               />
 
               <Route
                 path="/history"
-                // element={
-                //   user.admin ? <HistoryScreen /> : <Navigate to="/login" />
-                // }
-                element={<HistoryScreen />}
+                element={
+                  user.admin ? <HistoryScreen /> : <Navigate to="/login" />
+                }
               />
 
               <Route

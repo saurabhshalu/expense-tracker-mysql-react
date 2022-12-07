@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DoughnutChart from "../../components/DoughnutChart";
 import FilterBox from "../../components/FilterBox";
 import LoadingCircularBar from "../../components/LoadingCircularBar";
-import { YYYYMMDD } from "../../helper";
+import { YYYYMMDD, getAuthTokenWithUID } from "../../helper";
 
 const ExpenseIncomeByCategory = () => {
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ const ExpenseIncomeByCategory = () => {
   const getExpenseCategory = async () => {
     setLoading(true);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/query/expenseincomebycategory`,
         {
@@ -34,6 +35,9 @@ const ExpenseIncomeByCategory = () => {
             wallet_id: walletRef.current?.id,
             type: typeRef.current?.id,
             offset: new Date().getTimezoneOffset(),
+          },
+          headers: {
+            ...authTokens,
           },
         }
       );
@@ -100,7 +104,6 @@ const ExpenseIncomeByCategory = () => {
           <DoughnutChart
             label="Amount"
             clickHandler={(category) => {
-              console.log(category);
               navigate("/history", {
                 state: {
                   wallet: walletRef.current,

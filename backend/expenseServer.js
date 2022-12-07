@@ -22,9 +22,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "build")));
 app.use(express.static("public"));
 
-app.use("/api/expense", protect, checkAdmin, expenseRoute);
+app.use(protect);
+app.use(checkAdmin);
+
+app.use("/api/expense", expenseRoute);
 app.use("/api/category", categoryRoute);
-app.use("/api/report", protect, checkAdmin, reportRoute);
+app.use("/api/report", reportRoute);
 app.use("/api/wallets", walletRoute);
 app.use("/api/transactions", transactionRoute);
 app.use("/api/query", queryRoute);

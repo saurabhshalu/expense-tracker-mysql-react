@@ -6,7 +6,12 @@ import { useLocation } from "react-router-dom";
 import CustomAccordion from "../components/CustomAccordion";
 import FilterBox from "../components/FilterBox";
 import ResponsiveDataViewer from "../components/ResponsiveDataViewer";
-import { formatDate, getDate30daysBefore, YYYYMMDD } from "../helper";
+import {
+  formatDate,
+  getDate30daysBefore,
+  YYYYMMDD,
+  getAuthTokenWithUID,
+} from "../helper";
 import { closeModal, getWalletList, openModal } from "../redux/globalSlice";
 
 const columns = [
@@ -89,6 +94,7 @@ const HistoryScreen = () => {
     setLoading(true);
     setTransactions([]);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/query/advance`,
         {
@@ -99,6 +105,9 @@ const HistoryScreen = () => {
             type: typeRef.current?.id,
             category: categoryRef.current?.id,
             offset: new Date().getTimezoneOffset(),
+          },
+          headers: {
+            ...authTokens,
           },
         }
       );
@@ -123,10 +132,6 @@ const HistoryScreen = () => {
   }, []);
 
   useEffect(() => {
-    // console.log(force_refetch, dataToAdd);
-    // if (force_refetch && !dataToAdd) {
-    //   fetchData();
-    // }
     if (force_refetch && added_data && data_type) {
       if (data_type === "add") {
         setTransactions((old) => [added_data, ...old]);

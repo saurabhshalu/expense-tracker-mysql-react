@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import axios from "axios";
+import { getAuthTokenWithUID } from "../helper";
 
 const useHTTP = ({ url, method, body, headers, initialValue = [], params }) => {
   const [data, setData] = useState(initialValue);
@@ -10,11 +11,12 @@ const useHTTP = ({ url, method, body, headers, initialValue = [], params }) => {
     setLoading(true);
     setError(null);
     try {
+      const authTokens = await getAuthTokenWithUID();
       const response = await axios({
         method: method,
         url: url,
         data: body,
-        headers: headers,
+        headers: { ...authTokens, headers },
         params: params,
       });
       if (response.data.success) {
@@ -27,6 +29,7 @@ const useHTTP = ({ url, method, body, headers, initialValue = [], params }) => {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, headers, body, method]);
 
   return { data, loading, error, call };

@@ -174,6 +174,17 @@ const Navbar = () => {
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
+                      navigate("/wallet");
+                    }}
+                  >
+                    Wallets
+                  </MenuItem>
+                )}
+
+                {authenticated && (
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseUserMenu();
                       navigate("/settings");
                     }}
                   >

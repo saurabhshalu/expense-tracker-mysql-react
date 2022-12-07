@@ -8,8 +8,9 @@ import LoadingCircularBar from "../../components/LoadingCircularBar";
 import useHTTP from "../../hooks/useHTTP";
 import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getCategoryList, getWalletList } from "../../redux/globalSlice";
+import AddIcon from "@mui/icons-material/AddCircle";
 
 const startWith30Period = new Date();
 startWith30Period.setDate(startWith30Period.getDate() - 30);
@@ -23,20 +24,7 @@ const Overview = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(getWalletList());
-    dispatch(getCategoryList());
-  }, [dispatch]);
-
-  const {
-    data: walletBalanceList,
-    loading: walletLoading,
-    call: callWalletBalance,
-  } = useHTTP({
-    url: `${process.env.REACT_APP_BACKEND_URL}/api/wallets/balance`,
-    method: "GET",
-    initialValue: [],
-  });
+  const { wallet_list, wallet_loading } = useSelector((state) => state.global);
 
   const {
     data: expenseByCategoryData,
@@ -98,16 +86,15 @@ const Overview = () => {
   const last7DayChartData = groupByDate(7, last7dayData);
 
   useEffect(() => {
-    callWalletBalance();
     callExpenseByCategoryData();
     callIncomeVsExpense();
     last7DayCall();
-  }, [
-    callWalletBalance,
-    callExpenseByCategoryData,
-    callIncomeVsExpense,
-    last7DayCall,
-  ]);
+  }, [callExpenseByCategoryData, callIncomeVsExpense, last7DayCall]);
+
+  useEffect(() => {
+    dispatch(getCategoryList());
+    dispatch(getWalletList());
+  }, [dispatch]);
 
   return (
     <>
@@ -128,19 +115,58 @@ const Overview = () => {
             overflowX: "auto",
           }}
         >
-          {walletLoading ? (
+          {wallet_loading ? (
             <div style={{ width: "100%" }}>
               <LinearProgress />
             </div>
           ) : (
-            walletBalanceList.map((item) => (
+            <>
+              {wallet_list.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    background: "white",
+                    borderRadius: 5,
+                    display: "inline-flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "column",
+                    gap: 10,
+                    border: "1px dashed gray",
+                    padding: "10px 25px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "lighter",
+                      color: item.balance >= 0 ? "green" : "red",
+                    }}
+                  >
+                    {item.balance.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                      currency: "INR",
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      color: "gray",
+                      textTransform: "uppercase",
+                      fontSize: 15,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                </div>
+              ))}
               <div
-                key={item.id}
+                onClick={() => {
+                  navigate("/wallet");
+                }}
                 style={{
-                  // minWidth: "300px",
-                  // width: "100%",
-                  // maxWidth: "400px",
-                  // minWidth: 200,
+                  cursor: "pointer",
                   background: "white",
                   borderRadius: 5,
                   display: "inline-flex",
@@ -152,19 +178,7 @@ const Overview = () => {
                   padding: "10px 25px",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "lighter",
-                    color: item.balance >= 0 ? "green" : "red",
-                  }}
-                >
-                  {item.balance.toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
-                    style: "currency",
-                    currency: "INR",
-                  })}
-                </div>
+                <AddIcon color="primary" />
                 <div
                   style={{
                     color: "gray",
@@ -173,10 +187,10 @@ const Overview = () => {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {item.name}
+                  New Wallet
                 </div>
               </div>
-            ))
+            </>
           )}
         </div>
 
@@ -187,7 +201,7 @@ const Overview = () => {
             <DoughnutChart
               label="Amount"
               clickHandler={() => {
-                navigate("./category", {
+                navigate("/overview/category", {
                   state: {
                     start,
                     end,
@@ -220,7 +234,7 @@ const Overview = () => {
             <DoughnutChart
               label="Amount"
               clickHandler={() => {
-                navigate("./creditdebit", {
+                navigate("/overview/creditdebit", {
                   state: {
                     start,
                     end,
