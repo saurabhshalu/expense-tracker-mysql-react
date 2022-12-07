@@ -181,7 +181,7 @@ const Navbar = () => {
                   </MenuItem>
                 )}
 
-                {authenticated && (
+                {/* {authenticated && (
                   <MenuItem
                     onClick={() => {
                       handleCloseUserMenu();
@@ -190,7 +190,7 @@ const Navbar = () => {
                   >
                     Settings
                   </MenuItem>
-                )}
+                )} */}
 
                 {authenticated && (
                   <MenuItem
