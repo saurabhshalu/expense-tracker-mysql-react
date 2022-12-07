@@ -22,15 +22,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "build")));
 app.use(express.static("public"));
 
-app.use(protect);
-app.use(checkAdmin);
-
-app.use("/api/expense", expenseRoute);
-app.use("/api/category", categoryRoute);
-app.use("/api/report", reportRoute);
-app.use("/api/wallets", walletRoute);
-app.use("/api/transactions", transactionRoute);
-app.use("/api/query", queryRoute);
+app.use("/api/expense", protect, checkAdmin, expenseRoute);
+app.use("/api/category", protect, checkAdmin, categoryRoute);
+app.use("/api/report", protect, checkAdmin, reportRoute);
+app.use("/api/wallets", protect, checkAdmin, walletRoute);
+app.use("/api/transactions", protect, checkAdmin, transactionRoute);
+app.use("/api/query", protect, checkAdmin, queryRoute);
 
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
