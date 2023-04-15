@@ -1,7 +1,11 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const path = require("path");
-const cors = require("cors");
+//const cors = require("cors");
+
+const https = require("https");
+const fs = require("fs");
+
 const expenseRoute = require("./router/expenseRoute");
 const categoryRoute = require("./router/categoryRoute");
 const reportRoute = require("./router/reportRoute");
@@ -16,7 +20,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "frontend", "build")));
@@ -33,7 +37,15 @@ app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 });
 
-app.listen(
+
+/*app.listen(
   process.env.PORT,
   console.log(`Server running on PORT: ${process.env.PORT}`)
-);
+);*/
+
+const options = {
+  key: fs.readFileSync('/etc/nginx/ssl/nginx.key'),
+  cert: fs.readFileSync('/etc/nginx/ssl/nginx.crt')
+}
+
+https.createServer(options, app).listen(process.env.PORT, ()=>console.log(`Server started on port : ${process.env.PORT}`))
