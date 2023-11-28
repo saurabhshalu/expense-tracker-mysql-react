@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 //const cors = require("cors");
 
-const https = require("https");
+// const https = require("https");
 const fs = require("fs");
 
 const expenseRoute = require("./router/expenseRoute");
@@ -37,15 +37,14 @@ app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 });
 
-
-/*app.listen(
+app.listen(
   process.env.PORT,
   console.log(`Server running on PORT: ${process.env.PORT}`)
-);*/
+);
 
-const options = {
-  key: fs.readFileSync('/etc/nginx/ssl/nginx.key'),
-  cert: fs.readFileSync('/etc/nginx/ssl/nginx.crt')
-}
+// const options = {
+//   key: fs.readFileSync('/etc/nginx/ssl/private.key'),
+//   cert: fs.readFileSync('/etc/nginx/ssl/certificate.crt')
+// }
 
-https.createServer(options, app).listen(process.env.PORT, ()=>console.log(`Server started on port : ${process.env.PORT}`))
+// https.createServer(options, app).listen(process.env.PORT, ()=>console.log(`Server started on port : ${process.env.PORT}`))
