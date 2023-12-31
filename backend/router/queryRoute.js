@@ -13,8 +13,8 @@ router.get("/advance", async (req, res) => {
       type,
     } = req.query;
 
-    let sqlQuery = `SELECT a.id, a.date, a.category, a.description, a.amount, a.wallet_id, b.name as wallet_name FROM transactions a INNER JOIN wallets b ON a.wallet_id = b.id WHERE`;
-    const values = [];
+    let sqlQuery = `SELECT a.id, a.date, a.category, a.description, a.amount, a.wallet_id, b.name as wallet_name FROM transactions a INNER JOIN wallets b ON a.wallet_id = b.id AND a.email = b.email WHERE a.email=? AND`;
+    const values = [req.user.email];
 
     const startDate = new Date(start);
     startDate.setUTCHours(0, 0 + +offset, 0, 0);
@@ -65,8 +65,8 @@ router.get("/advance", async (req, res) => {
 router.get("/expenseincomebycategory", async (req, res) => {
   try {
     const { start, end, offset = -330, wallet_id = 0, type } = req.query;
-    let sqlQuery = `SELECT category, sum(amount) as total FROM transactions WHERE`;
-    const values = [];
+    let sqlQuery = `SELECT category, sum(amount) as total FROM transactions WHERE email=? AND`;
+    const values = [req.user.email];
 
     const startDate = new Date(start);
     startDate.setUTCHours(0, 0 + +offset, 0, 0);
@@ -112,8 +112,8 @@ router.get("/expenseincomebycategory", async (req, res) => {
 router.get("/incomevsexpense", async (req, res) => {
   try {
     const { start, end, offset = -330, wallet_id = 0 } = req.query;
-    let sqlQuery = `SELECT sum(amount) as total FROM transactions WHERE 1=1`;
-    const values = [];
+    let sqlQuery = `SELECT sum(amount) as total FROM transactions WHERE email=?`;
+    const values = [req.user.email];
 
     const startDate = new Date(start);
     startDate.setUTCHours(0, 0 + +offset, 0, 0);

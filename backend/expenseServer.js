@@ -26,12 +26,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "build")));
 app.use(express.static("public"));
 
-app.use("/api/expense", protect, checkAdmin, expenseRoute);
-app.use("/api/category", protect, checkAdmin, categoryRoute);
-app.use("/api/report", protect, checkAdmin, reportRoute);
-app.use("/api/wallets", protect, checkAdmin, walletRoute);
-app.use("/api/transactions", protect, checkAdmin, transactionRoute);
-app.use("/api/query", protect, checkAdmin, queryRoute);
+app.use("/api/expense", protect, expenseRoute);
+app.use("/api/category", protect, categoryRoute);
+app.use("/api/report", protect, reportRoute);
+app.use("/api/wallets", protect, walletRoute);
+app.use("/api/transactions", protect, transactionRoute);
+app.use("/api/query", protect, queryRoute);
 
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));

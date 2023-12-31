@@ -16,13 +16,14 @@ router
       const mydate = date ? new Date(date) : new Date();
       const mydateString = mydate.toISOString().split("T");
       const data = await DB.query_promise(
-        "INSERT INTO transactions (date, category, description, amount, wallet_id) VALUES (?,?,?,?,?)",
+        "INSERT INTO transactions (date, category, description, amount, wallet_id,email) VALUES (?,?,?,?,?,?)",
         [
           `${mydateString[0]} ${mydateString[1].replace("Z", "")}`,
           category,
           description,
           amount,
           wallet_id,
+          req.user.email,
         ]
       );
       res.status(200).json({ success: true, data });
@@ -40,7 +41,8 @@ router
   .get(async (_, res) => {
     try {
       const rows = await DB.query_promise(
-        `select a.id, a.date, a.category, a.description, a.amount, a.wallet_id, b.name as wallet_name from transactions a INNER JOIN wallets b ON a.wallet_id = b.id ORDER BY a.date DESC`
+        `select a.id, a.date, a.category, a.description, a.amount, a.wallet_id, b.name as wallet_name from transactions a INNER JOIN wallets b ON a.wallet_id = b.id and a.email = b.email WHERE a.email=? ORDER BY a.date DESC`,
+        [req.user.email]
       );
       res.status(200).json({ success: true, data: rows });
     } catch (error) {
@@ -76,8 +78,9 @@ router
         values.push(`${mydateString[0]} ${mydateString[1].replace("Z", "")}`);
       }
 
-      query += ` WHERE id=?`;
+      query += ` WHERE id=? and email=?`;
       values.push(req.params.id);
+      values.push(req.user.email);
       const data = await DB.query_promise(query, values);
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -94,8 +97,8 @@ router
   .delete(async (req, res) => {
     try {
       const data = await DB.query_promise(
-        "DELETE FROM transactions WHERE id=?",
-        [req.params.id]
+        "DELETE FROM transactions WHERE id=? and email=?",
+        [req.params.id, req.user.email]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -129,7 +132,8 @@ router.get("/groupByCategory", async (req, res) => {
     endDate.setUTCHours(23, 59 + +offset, 59, 999);
     const endString = endDate.toISOString().split("T");
 
-    sqlQuery += ` WHERE date >= ? AND date <= ?`;
+    sqlQuery += ` WHERE email=? AND date >= ? AND date <= ?`;
+    values.push(req.user.email);
     values.push(`${startString[0]} ${startString[1].replace("Z", "")}`);
     values.push(`${endString[0]} ${endString[1].replace("Z", "")}`);
 

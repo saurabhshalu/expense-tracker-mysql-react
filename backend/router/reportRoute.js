@@ -16,24 +16,26 @@ router.get("/overview", async (req, res) => {
     endDate.setUTCHours(23, 59 + +offset, 59, 999);
     const endString = endDate.toISOString().split("T");
 
-    sqlQuery += ` WHERE date >= ? AND date <= ?`;
+    sqlQuery += ` WHERE email=? AND date >= ? AND date <= ?`;
+    values.push(req.user.email);
     values.push(`${startString[0]} ${startString[1].replace("Z", "")}`);
     values.push(`${endString[0]} ${endString[1].replace("Z", "")}`);
 
     sqlQuery += ` GROUP BY category, SIGN(amount)`;
     const data = await DB.query_promise(sqlQuery, values);
 
-    let closingBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE date < ?`;
+    let closingBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE email=? AND date < ?`;
 
     const closingBalance = await DB.query_promise(closingBalanceQuery, [
+      req.user.email,
       `${startString[0]} ${startString[1].replace("Z", "")}`,
     ]);
 
-    let afterLastDateBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE date > ?`;
+    let afterLastDateBalanceQuery = `SELECT sum(amount) as total FROM tbl_transaction WHERE email = ? and date > ?`;
 
     const afterLastDateBalance = await DB.query_promise(
       afterLastDateBalanceQuery,
-      [`${endString[0]} ${endString[1].replace("Z", "")}`]
+      [req.user.email, `${endString[0]} ${endString[1].replace("Z", "")}`]
     );
 
     res.status(200).json({
@@ -55,8 +57,8 @@ router.get("/overview", async (req, res) => {
 router.get("/details", async (req, res) => {
   const { start, end, category, type, offset = -330 } = req.query;
 
-  let sqlQuery = `SELECT * FROM tbl_transaction WHERE`;
-  const values = [];
+  let sqlQuery = `SELECT * FROM tbl_transaction WHERE email=?`;
+  const values = [req.user.email];
   if (category) {
     sqlQuery += ` category = ?`;
     values.push(category);
@@ -113,8 +115,8 @@ router.get("/category/:id", async (req, res) => {
   }
   try {
     const data = await DB.query_promise(
-      "SELECT * FROM tbl_transaction WHERE category=?",
-      [id]
+      "SELECT * FROM tbl_transaction WHERE email=? AND category=?",
+      [req.user.email, id]
     );
     res.status(200).json({ success: true, data });
   } catch (error) {

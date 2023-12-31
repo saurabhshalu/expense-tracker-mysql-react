@@ -6,7 +6,10 @@ router
   .route("/")
   .get(async (req, res) => {
     try {
-      const data = await DB.query_promise("SELECT * FROM wallets");
+      const data = await DB.query_promise(
+        "SELECT * FROM wallets WHERE email=?",
+        [req.user.email]
+      );
       res.status(200).json({ success: true, data });
     } catch (error) {
       res.status(400).json({
@@ -32,8 +35,8 @@ router
 
     try {
       const data = await DB.query_promise(
-        "INSERT INTO wallets(name, balance, type) VALUES(?,?,?)",
-        [name, balance, type]
+        "INSERT INTO wallets(name, balance, type, email) VALUES(?,?,?,?)",
+        [name, balance, type, req.user.email]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -51,9 +54,10 @@ router
   .route("/:id")
   .delete(async (req, res) => {
     try {
-      const data = await DB.query_promise("DELETE FROM wallets WHERE id=?", [
-        req.params.id,
-      ]);
+      const data = await DB.query_promise(
+        "DELETE FROM wallets WHERE id=? and email=?",
+        [req.params.id, req.user.email]
+      );
       res.status(200).json({ success: true, data });
     } catch (error) {
       res.status(400).json({
@@ -77,8 +81,9 @@ router
         values.push(name);
       }
 
-      query += ` WHERE id=?`;
+      query += ` WHERE id=? AND email=?`;
       values.push(req.params.id);
+      values.push(req.user.email);
 
       const data = await DB.query_promise(query, values);
       res.status(200).json({ success: true, data });
@@ -98,8 +103,8 @@ router.get("/:id/history", async (req, res) => {
   try {
     const { start, end, type, offset = -330 } = req.query;
 
-    let query = "SELECT * FROM transactions WHERE wallet_id=?";
-    const values = [req.params.id];
+    let query = "SELECT * FROM transactions WHERE wallet_id=? AND email=?";
+    const values = [req.params.id, req.user.email];
 
     if (type) {
       if (type === "Expense") {
@@ -146,10 +151,12 @@ router.get("/:id/history", async (req, res) => {
 router.get("/balance", async (req, res) => {
   try {
     const walletBalanceListFromTransactions = await DB.query_promise(
-      "SELECT wallet_id, SUM(amount) as balance FROM transactions GROUP BY wallet_id"
+      "SELECT wallet_id, SUM(amount) as balance FROM transactions WHERE email=? GROUP BY wallet_id",
+      [req.user.email]
     );
     const walletList = await DB.query_promise(
-      "SELECT * FROM wallets WHERE active=true"
+      "SELECT * FROM wallets WHERE email=? AND active=true",
+      [req.user.email]
     );
 
     const data = walletList.map((item) => ({

@@ -16,12 +16,13 @@ router
       const mydate = date ? new Date(date) : new Date();
       const mydateString = mydate.toISOString().split("T");
       const data = await DB.query_promise(
-        "INSERT INTO tbl_transaction (date, category, description, amount) VALUES (?,?,?,?)",
+        "INSERT INTO tbl_transaction (date, category, description, amount, email) VALUES (?,?,?,?,?)",
         [
           `${mydateString[0]} ${mydateString[1].replace("Z", "")}`,
           category,
           description,
           amount,
+          req.user.email,
         ]
       );
       res.status(200).json({ success: true, data });
@@ -42,9 +43,10 @@ router
         `SELECT * ,(
             SELECT SUM(T2.amount)  
              FROM tbl_transaction AS T2
-                   WHERE T2.date <= T1.date
+                   WHERE T2.date <= T1.date and T2.email = ?
             ) AS RunningTotal
-            FROM tbl_transaction AS T1 ORDER BY date DESC`
+            FROM tbl_transaction AS T1 WHERE T1.email = ? ORDER BY date DESC`,
+        [req.user.email, req.user.email]
       );
       res.status(200).json({ success: true, data: rows });
     } catch (error) {
@@ -77,8 +79,9 @@ router
         values.push(`${mydateString[0]} ${mydateString[1].replace("Z", "")}`);
       }
 
-      query += ` WHERE id=?`;
+      query += ` WHERE id=? and email=?`;
       values.push(id);
+      values.push(req.user.email);
       const data = await DB.query_promise(query, values);
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -101,8 +104,8 @@ router
           .json({ success: false, message: "Please send proper request." });
       }
       const data = await DB.query_promise(
-        "DELETE FROM tbl_transaction WHERE id=?",
-        [id]
+        "DELETE FROM tbl_transaction WHERE id=? and email=?",
+        [id, req.user.email]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -124,8 +127,8 @@ router.get("/report", async (req, res) => {
   }
   try {
     const data = await DB.query_promise(
-      "SELECT * FROM tbl_transaction WHERE category=?",
-      [category]
+      "SELECT * FROM tbl_transaction WHERE category=? and email=?",
+      [category, req.user.email]
     );
     res.status(200).json({ success: true, data });
   } catch (error) {

@@ -7,7 +7,8 @@ router
   .get(async (req, res) => {
     try {
       const data = await DB.query_promise(
-        "SELECT name as id, name FROM tbl_category ORDER BY name"
+        "SELECT name as id, name FROM tbl_category WHERE email = ? ORDER BY name",
+        [req.user.email]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -29,8 +30,8 @@ router
     }
     try {
       const data = await DB.query_promise(
-        "INSERT INTO tbl_category VALUES(?)",
-        [name]
+        "INSERT INTO tbl_category VALUES(?,?)",
+        [name, req.user.email]
       );
       res.status(200).json({ success: true, data });
     } catch (error) {
@@ -47,8 +48,8 @@ router
 router.route("/:name").delete(async (req, res) => {
   try {
     const data = await DB.query_promise(
-      "DELETE FROM tbl_category WHERE name=?",
-      [req.params.name]
+      "DELETE FROM tbl_category WHERE name=? and email=?",
+      [req.params.name, req.user.email]
     );
     res.status(200).json({ success: true, data });
   } catch (error) {
@@ -66,8 +67,8 @@ router.get("/:name/history", async (req, res) => {
   try {
     const { start, end, type, offset = -330 } = req.query;
 
-    let query = "SELECT * FROM transactions WHERE category=?";
-    const values = [req.params.name];
+    let query = "SELECT * FROM transactions WHERE category=? and email=?";
+    const values = [req.params.name, req.user.email];
 
     if (type) {
       if (type === "Expense") {
